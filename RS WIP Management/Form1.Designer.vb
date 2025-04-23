@@ -35,6 +35,7 @@ Partial Class Form1
         Me.MenuStrip1 = New System.Windows.Forms.MenuStrip()
         Me.WIPToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.MenuToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.SettingsToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.PictureBox1 = New System.Windows.Forms.PictureBox()
         Me.Label5 = New System.Windows.Forms.Label()
         Me.Label4 = New System.Windows.Forms.Label()
@@ -51,7 +52,8 @@ Partial Class Form1
         Me.lblfooter2 = New System.Windows.Forms.Label()
         Me.Panel1 = New System.Windows.Forms.Panel()
         Me.Main = New Guna.UI2.WinForms.Guna2CustomGradientPanel()
-        Me.SettingsToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.UpdateWIPToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ViewWIPToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.MenuStrip1.SuspendLayout()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.Panel2.SuspendLayout()
@@ -84,43 +86,43 @@ Partial Class Form1
         'PunchPressToolStripMenuItem
         '
         Me.PunchPressToolStripMenuItem.Name = "PunchPressToolStripMenuItem"
-        Me.PunchPressToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.PunchPressToolStripMenuItem.Size = New System.Drawing.Size(169, 22)
         Me.PunchPressToolStripMenuItem.Text = "Punch Press"
         '
         'VibratorToolStripMenuItem
         '
         Me.VibratorToolStripMenuItem.Name = "VibratorToolStripMenuItem"
-        Me.VibratorToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.VibratorToolStripMenuItem.Size = New System.Drawing.Size(169, 22)
         Me.VibratorToolStripMenuItem.Text = "Vibrator"
         '
         'LoadAndWashToolStripMenuItem
         '
         Me.LoadAndWashToolStripMenuItem.Name = "LoadAndWashToolStripMenuItem"
-        Me.LoadAndWashToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.LoadAndWashToolStripMenuItem.Size = New System.Drawing.Size(169, 22)
         Me.LoadAndWashToolStripMenuItem.Text = "Load and Wash"
         '
         'AnnealingToolStripMenuItem
         '
         Me.AnnealingToolStripMenuItem.Name = "AnnealingToolStripMenuItem"
-        Me.AnnealingToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.AnnealingToolStripMenuItem.Size = New System.Drawing.Size(169, 22)
         Me.AnnealingToolStripMenuItem.Text = "Annealing"
         '
         'WashToolStripMenuItem
         '
         Me.WashToolStripMenuItem.Name = "WashToolStripMenuItem"
-        Me.WashToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.WashToolStripMenuItem.Size = New System.Drawing.Size(169, 22)
         Me.WashToolStripMenuItem.Text = "Wash"
         '
         'SputToolStripMenuItem
         '
         Me.SputToolStripMenuItem.Name = "SputToolStripMenuItem"
-        Me.SputToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.SputToolStripMenuItem.Size = New System.Drawing.Size(169, 22)
         Me.SputToolStripMenuItem.Text = "Sput"
         '
         'SAMToolStripMenuItem
         '
         Me.SAMToolStripMenuItem.Name = "SAMToolStripMenuItem"
-        Me.SAMToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.SAMToolStripMenuItem.Size = New System.Drawing.Size(169, 22)
         Me.SAMToolStripMenuItem.Text = "SAM"
         '
         'MenuStrip1
@@ -137,6 +139,7 @@ Partial Class Form1
         '
         'WIPToolStripMenuItem
         '
+        Me.WIPToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ViewWIPToolStripMenuItem, Me.UpdateWIPToolStripMenuItem})
         Me.WIPToolStripMenuItem.Name = "WIPToolStripMenuItem"
         Me.WIPToolStripMenuItem.Size = New System.Drawing.Size(45, 21)
         Me.WIPToolStripMenuItem.Text = "WIP"
@@ -147,6 +150,12 @@ Partial Class Form1
         Me.MenuToolStripMenuItem.Size = New System.Drawing.Size(80, 21)
         Me.MenuToolStripMenuItem.Text = "View Data"
         Me.MenuToolStripMenuItem.Visible = False
+        '
+        'SettingsToolStripMenuItem
+        '
+        Me.SettingsToolStripMenuItem.Name = "SettingsToolStripMenuItem"
+        Me.SettingsToolStripMenuItem.Size = New System.Drawing.Size(69, 21)
+        Me.SettingsToolStripMenuItem.Text = "Settings"
         '
         'PictureBox1
         '
@@ -439,11 +448,17 @@ Partial Class Form1
         Me.Main.Size = New System.Drawing.Size(980, 701)
         Me.Main.TabIndex = 1
         '
-        'SettingsToolStripMenuItem
+        'UpdateWIPToolStripMenuItem
         '
-        Me.SettingsToolStripMenuItem.Name = "SettingsToolStripMenuItem"
-        Me.SettingsToolStripMenuItem.Size = New System.Drawing.Size(69, 21)
-        Me.SettingsToolStripMenuItem.Text = "Settings"
+        Me.UpdateWIPToolStripMenuItem.Name = "UpdateWIPToolStripMenuItem"
+        Me.UpdateWIPToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.UpdateWIPToolStripMenuItem.Text = "Update Target"
+        '
+        'ViewWIPToolStripMenuItem
+        '
+        Me.ViewWIPToolStripMenuItem.Name = "ViewWIPToolStripMenuItem"
+        Me.ViewWIPToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.ViewWIPToolStripMenuItem.Text = "View WIP"
         '
         'Form1
         '
@@ -499,4 +514,6 @@ Partial Class Form1
     Friend WithEvents VibratorToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents MenuToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents SettingsToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents UpdateWIPToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ViewWIPToolStripMenuItem As ToolStripMenuItem
 End Class

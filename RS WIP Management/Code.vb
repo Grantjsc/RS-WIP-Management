@@ -267,6 +267,17 @@ Module Function_Module
 
     End Sub
 
+    Sub UpdateWIP_clicked()
+        With UpdateWIP_Form
+            .TopLevel = False
+            Form1.Main.Controls.Add(UpdateWIP_Form)
+            .WindowState = FormWindowState.Maximized
+            .BringToFront()
+            .Show()
+        End With
+
+    End Sub
+
     Sub ViewAll_clicked()
         With ViewData_Form
             .TopLevel = False

@@ -14,6 +14,7 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>\\btwebdev01\Websites\WindowsAppUpdater\TSG_Shared\RS WIP Management\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Unc</InstallFrom>
@@ -28,15 +29,15 @@
     <PublisherName>Littelfuse Philippines %28TSG%29 - GCatapang</PublisherName>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>Installer.htm</WebPage>
-    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationRevision>5</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>x64</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <DefineDebug>true</DefineDebug>
@@ -69,6 +70,18 @@
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>project-management.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>00C55C6D81EEB8A1B79E890E486BFBE318FAC79E</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>RS WIP Management_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Guna.UI2, Version=2.0.4.6, Culture=neutral, PublicKeyToken=8b9d14aa5142e261, processorArchitecture=MSIL">
@@ -133,6 +146,12 @@
     <Compile Include="PassSettings_Form.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="PassUpdateWIP_Form.Designer.vb">
+      <DependentUpon>PassUpdateWIP_Form.vb</DependentUpon>
+    </Compile>
+    <Compile Include="PassUpdateWIP_Form.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="PassWIP_Form.Designer.vb">
       <DependentUpon>PassWIP_Form.vb</DependentUpon>
     </Compile>
@@ -148,6 +167,13 @@
       <DependentUpon>Settings_Form.vb</DependentUpon>
     </Compile>
     <Compile Include="Settings_Form.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SQLQuery.vb" />
+    <Compile Include="UpdateWIP_Form.Designer.vb">
+      <DependentUpon>UpdateWIP_Form.vb</DependentUpon>
+    </Compile>
+    <Compile Include="UpdateWIP_Form.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="ViewData_Form.Designer.vb">
@@ -176,11 +202,17 @@
     <EmbeddedResource Include="PassSettings_Form.resx">
       <DependentUpon>PassSettings_Form.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="PassUpdateWIP_Form.resx">
+      <DependentUpon>PassUpdateWIP_Form.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="PassWIP_Form.resx">
       <DependentUpon>PassWIP_Form.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Settings_Form.resx">
       <DependentUpon>Settings_Form.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UpdateWIP_Form.resx">
+      <DependentUpon>UpdateWIP_Form.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ViewData_Form.resx">
       <DependentUpon>ViewData_Form.vb</DependentUpon>
@@ -201,6 +233,7 @@
     </None>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="RS WIP Management_TemporaryKey.pfx" />
     <None Include="RS_WIP_ManagementDataSet.xsc">
       <DependentUpon>RS_WIP_ManagementDataSet.xsd</DependentUpon>
     </None>

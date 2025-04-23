@@ -1,12 +1,20 @@
-﻿Public Class WIP_Form
+﻿Imports System.Web.UI.WebControls
+
+Public Class WIP_Form
     Private Sub WIP_Form_Load(sender As Object, e As EventArgs) Handles Me.Load
-        Get_WIP_Start()
-        Get_WIP_End()
+        AddHandler DataGridView1.DataBindingComplete, AddressOf ApplyCellStyles
+        'Get_WIP_Start()
+        'Get_WIP_End()
 
+        SAM_sub_Gap()
         Load_Avail_WIP()
+        'Load_Target_WIP()
 
-        dtpStartDate.Value = Date.Now
-        dtpEndDate.Value = Date.Now
+        'dtpStartDate.Value = Date.Now
+        'dtpEndDate.Value = Date.Now
+
+        'Load_WIP_BaseStartEnd()
+        'No_SUM = True
     End Sub
 
     Private Sub DataGridView1_CellClick(sender As Object, e As DataGridViewCellEventArgs) Handles DataGridView1.CellClick
@@ -33,13 +41,13 @@
         Me.Close()
     End Sub
 
-    Private Sub txtTarget_TextChanged(sender As Object, e As EventArgs) Handles txtTarget.TextChanged
-        If Not String.IsNullOrEmpty(txtTarget.Text) Then
-            txtGAP.Text = SAM_tOUT - CInt(txtTarget.Text)
-        Else
-            txtGAP.Clear()
-        End If
-    End Sub
+    'Private Sub txtTarget_TextChanged(sender As Object, e As EventArgs) Handles txtTarget.TextChanged
+    '    If Not String.IsNullOrEmpty(txtTarget.Text) Then
+    '        txtGAP.Text = SAM_tOUT - CInt(txtTarget.Text)
+    '    Else
+    '        txtGAP.Clear()
+    '    End If
+    'End Sub
 
     Private Sub txtTarget_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtTarget.KeyPress
         If Asc(e.KeyChar) <> 8 Then
@@ -57,7 +65,6 @@
         Else
             No_SUM = True
             Load_WIP_BaseStartEnd()
-            txtGAP.Clear()
             txtTarget.Clear()
         End If
     End Sub
@@ -65,40 +72,43 @@
     Private Sub btnViewAll_Click(sender As Object, e As EventArgs) Handles btnViewAll.Click
         No_SUM = False
         Load_Avail_WIP()
-        txtGAP.Clear()
         txtTarget.Clear()
     End Sub
 
-    Private Sub CopyDataGridViewToClipboard(ByRef dgv As DataGridView)
-        Dim s As String = ""
-        Dim oCurrentCol As DataGridViewColumn    'Get header
-        oCurrentCol = dgv.Columns.GetFirstColumn(DataGridViewElementStates.Visible)
-        Do
-            s &= oCurrentCol.HeaderText & Chr(Keys.Tab)
-            oCurrentCol = dgv.Columns.GetNextColumn(oCurrentCol,
-               DataGridViewElementStates.Visible, DataGridViewElementStates.None)
-        Loop Until oCurrentCol Is Nothing
-        s = s.Substring(0, s.Length - 1)
-        s &= Environment.NewLine    'Get rows
-        For Each row As DataGridViewRow In dgv.Rows
-            oCurrentCol = dgv.Columns.GetFirstColumn(DataGridViewElementStates.Visible)
-            Do
-                If row.Cells(oCurrentCol.Index).Value IsNot Nothing Then
-                    s &= row.Cells(oCurrentCol.Index).Value.ToString
-                End If
-                s &= Chr(Keys.Tab)
-                oCurrentCol = dgv.Columns.GetNextColumn(oCurrentCol,
-                      DataGridViewElementStates.Visible, DataGridViewElementStates.None)
-            Loop Until oCurrentCol Is Nothing
-            s = s.Substring(0, s.Length - 1)
-            s &= Environment.NewLine
-        Next    'Put to clipboard
-        Dim o As New DataObject
-        o.SetText(s)
-        Clipboard.SetDataObject(o, True)
+    Private Sub btnUpdate_Click(sender As Object, e As EventArgs) Handles btnUpdate.Click
+        'PassWIP_Form.ShowDialog()
+        Update_Target()
+        Load_Avail_WIP()
+
+        'If txtTarget.Text = "" Then
+        '    MsgBox("Please enter quantity!", MsgBoxStyle.Critical)
+        '    txtTarget.Focus()
+        'Else
+        '    Update_Target()
+        '    If No_SUM = True Then
+        '        Load_WIP_BaseStartEnd()
+        '    Else
+        '        Load_Avail_WIP()
+        '    End If
+        'End If
     End Sub
 
-    Private Sub btnCopy_Click(sender As Object, e As EventArgs) Handles btnCopy.Click
-        CopyDataGridViewToClipboard(DataGridView1)
+    Private Sub ApplyCellStyles(sender As Object, e As DataGridViewBindingCompleteEventArgs)
+        ' Apply conditional formatting at the cell level
+        For Each row As DataGridViewRow In DataGridView1.Rows
+            For Each cell As DataGridViewCell In row.Cells
+                Dim cellValue As Decimal
+                ' Check if the cell value is numeric and negative
+                If Decimal.TryParse(cell.Value?.ToString(), cellValue) AndAlso cellValue < 0 Then
+                    cell.Style.BackColor = Color.Red
+                    cell.Style.ForeColor = Color.White
+                Else
+                    ' Reset to default style for non-negative or non-numeric values
+                    cell.Style.BackColor = Color.Empty
+                    cell.Style.ForeColor = Color.Empty
+                End If
+            Next
+        Next
     End Sub
+
 End Class

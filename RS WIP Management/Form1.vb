@@ -87,12 +87,6 @@
         ClearData()
     End Sub
 
-    Private Sub WIPToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles WIPToolStripMenuItem.Click
-        'WIP_Form.ShowDialog()
-        WIP_clicked()
-        'PassWIP_Form.ShowDialog()
-    End Sub
-
     Private Sub txtQty_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtQty.KeyPress
         If Asc(e.KeyChar) <> 8 Then
             If Asc(e.KeyChar) <> 46 Then
@@ -109,5 +103,16 @@
 
     Private Sub SettingsToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles SettingsToolStripMenuItem.Click
         PassSettings_Form.ShowDialog()
+    End Sub
+
+    Private Sub UpdateWIPToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles UpdateWIPToolStripMenuItem.Click
+        'UpdateWIP_clicked()
+        PassUpdateWIP_Form.ShowDialog()
+    End Sub
+
+    Private Sub ViewWIPToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ViewWIPToolStripMenuItem.Click
+        'WIP_Form.ShowDialog()
+        WIP_clicked()
+        'PassWIP_Form.ShowDialog()
     End Sub
 End Class
