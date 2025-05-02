@@ -26,13 +26,13 @@ Partial Class UpdateWIP_Form
         Me.Guna2CustomGradientPanel1 = New Guna.UI2.WinForms.Guna2CustomGradientPanel()
         Me.GroupBoxTitle = New Guna.UI2.WinForms.Guna2GroupBox()
         Me.btnUpdate = New Guna.UI2.WinForms.Guna2Button()
+        Me.DataGridView1 = New System.Windows.Forms.DataGridView()
         Me.btnClose = New Guna.UI2.WinForms.Guna2Button()
         Me.lblProdName = New System.Windows.Forms.Label()
         Me.Label3 = New System.Windows.Forms.Label()
         Me.txtTarget = New Guna.UI2.WinForms.Guna2TextBox()
         Me.Label2 = New System.Windows.Forms.Label()
         Me.lblTitle = New System.Windows.Forms.Label()
-        Me.DataGridView1 = New System.Windows.Forms.DataGridView()
         Me.Guna2CustomGradientPanel1.SuspendLayout()
         Me.GroupBoxTitle.SuspendLayout()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -96,6 +96,22 @@ Partial Class UpdateWIP_Form
         Me.btnUpdate.TabIndex = 2
         Me.btnUpdate.Text = "Update"
         '
+        'DataGridView1
+        '
+        Me.DataGridView1.AllowUserToAddRows = False
+        Me.DataGridView1.AllowUserToDeleteRows = False
+        Me.DataGridView1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.DataGridView1.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill
+        Me.DataGridView1.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells
+        Me.DataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        Me.DataGridView1.Location = New System.Drawing.Point(27, 54)
+        Me.DataGridView1.Name = "DataGridView1"
+        Me.DataGridView1.ReadOnly = True
+        Me.DataGridView1.Size = New System.Drawing.Size(785, 343)
+        Me.DataGridView1.TabIndex = 0
+        '
         'btnClose
         '
         Me.btnClose.BackColor = System.Drawing.Color.Transparent
@@ -130,7 +146,6 @@ Partial Class UpdateWIP_Form
         Me.lblProdName.TabIndex = 16
         Me.lblProdName.Text = "name"
         Me.lblProdName.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
-        Me.lblProdName.Visible = False
         '
         'Label3
         '
@@ -145,7 +160,6 @@ Partial Class UpdateWIP_Form
         Me.Label3.Size = New System.Drawing.Size(155, 29)
         Me.Label3.TabIndex = 15
         Me.Label3.Text = "Product name:"
-        Me.Label3.Visible = False
         '
         'txtTarget
         '
@@ -176,7 +190,6 @@ Partial Class UpdateWIP_Form
         Me.txtTarget.Size = New System.Drawing.Size(250, 51)
         Me.txtTarget.TabIndex = 1
         Me.txtTarget.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
-        Me.txtTarget.Visible = False
         '
         'Label2
         '
@@ -190,7 +203,6 @@ Partial Class UpdateWIP_Form
         Me.Label2.Size = New System.Drawing.Size(158, 17)
         Me.Label2.TabIndex = 11
         Me.Label2.Text = "Please enter the target WIP"
-        Me.Label2.Visible = False
         '
         'lblTitle
         '
@@ -205,22 +217,6 @@ Partial Class UpdateWIP_Form
         Me.lblTitle.Size = New System.Drawing.Size(143, 36)
         Me.lblTitle.TabIndex = 10
         Me.lblTitle.Text = "Target WIP"
-        Me.lblTitle.Visible = False
-        '
-        'DataGridView1
-        '
-        Me.DataGridView1.AllowUserToAddRows = False
-        Me.DataGridView1.AllowUserToDeleteRows = False
-        Me.DataGridView1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
-            Or System.Windows.Forms.AnchorStyles.Left) _
-            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.DataGridView1.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill
-        Me.DataGridView1.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells
-        Me.DataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        Me.DataGridView1.Location = New System.Drawing.Point(27, 54)
-        Me.DataGridView1.Name = "DataGridView1"
-        Me.DataGridView1.Size = New System.Drawing.Size(785, 472)
-        Me.DataGridView1.TabIndex = 0
         '
         'UpdateWIP_Form
         '

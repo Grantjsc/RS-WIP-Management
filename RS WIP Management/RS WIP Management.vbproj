@@ -29,7 +29,7 @@
     <PublisherName>Littelfuse Philippines %28TSG%29 - GCatapang</PublisherName>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>Installer.htm</WebPage>
-    <ApplicationRevision>5</ApplicationRevision>
+    <ApplicationRevision>8</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
@@ -37,7 +37,7 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <DefineDebug>true</DefineDebug>
@@ -117,12 +117,25 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AccessQuery.vb" />
+    <Compile Include="Anneal_Form.Designer.vb">
+      <DependentUpon>Anneal_Form.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Anneal_Form.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Code.vb" />
+    <Compile Include="Editor.vb" />
     <Compile Include="Form1.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form1.Designer.vb">
       <DependentUpon>Form1.vb</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LoadWash_Form.Designer.vb">
+      <DependentUpon>LoadWash_Form.vb</DependentUpon>
+    </Compile>
+    <Compile Include="LoadWash_Form.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="My Project\AssemblyInfo.vb" />
@@ -158,6 +171,13 @@
     <Compile Include="PassWIP_Form.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="PrevCodes.vb" />
+    <Compile Include="PunchPress_Form.Designer.vb">
+      <DependentUpon>PunchPress_Form.vb</DependentUpon>
+    </Compile>
+    <Compile Include="PunchPress_Form.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="RS_WIP_ManagementDataSet.Designer.vb">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -169,11 +189,23 @@
     <Compile Include="Settings_Form.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Sput_Form.Designer.vb">
+      <DependentUpon>Sput_Form.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sput_Form.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="SQLQuery.vb" />
     <Compile Include="UpdateWIP_Form.Designer.vb">
       <DependentUpon>UpdateWIP_Form.vb</DependentUpon>
     </Compile>
     <Compile Include="UpdateWIP_Form.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Vibrator_Form.Designer.vb">
+      <DependentUpon>Vibrator_Form.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Vibrator_Form.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="ViewData_Form.Designer.vb">
@@ -190,8 +222,14 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Anneal_Form.resx">
+      <DependentUpon>Anneal_Form.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LoadWash_Form.resx">
+      <DependentUpon>LoadWash_Form.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="My Project\Resources.resx">
       <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
@@ -208,11 +246,20 @@
     <EmbeddedResource Include="PassWIP_Form.resx">
       <DependentUpon>PassWIP_Form.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="PunchPress_Form.resx">
+      <DependentUpon>PunchPress_Form.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Settings_Form.resx">
       <DependentUpon>Settings_Form.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Sput_Form.resx">
+      <DependentUpon>Sput_Form.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="UpdateWIP_Form.resx">
       <DependentUpon>UpdateWIP_Form.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Vibrator_Form.resx">
+      <DependentUpon>Vibrator_Form.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ViewData_Form.resx">
       <DependentUpon>ViewData_Form.vb</DependentUpon>

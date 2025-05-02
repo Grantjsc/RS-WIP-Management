@@ -26,14 +26,14 @@
     End Sub
 
     Private Sub btnUpdate_Click(sender As Object, e As EventArgs) Handles btnUpdate.Click
-        UpdateAll()
+        'UpdateAll()
 
-        'If txtTarget.Text = "" Then
-        '    MsgBox("Please enter the new target quantity!", MsgBoxStyle.Critical)
-        'Else
-        '    'PassWIP_Form.ShowDialog()
-        '    UpdateWIP_Update_Target()
-        '    UpdateWIP_Load()
-        'End If
+        If txtTarget.Text = "" Then
+            MsgBox("Please enter the new target quantity!", MsgBoxStyle.Critical)
+        Else
+            'PassWIP_Form.ShowDialog()
+            UpdateWIP_Update_Target()
+            UpdateWIP_Load()
+        End If
     End Sub
 End Class

@@ -15,6 +15,8 @@ Public Class WIP_Form
 
         'Load_WIP_BaseStartEnd()
         'No_SUM = True
+
+        '=========< 
     End Sub
 
     Private Sub DataGridView1_CellClick(sender As Object, e As DataGridViewCellEventArgs) Handles DataGridView1.CellClick
@@ -111,4 +113,16 @@ Public Class WIP_Form
         Next
     End Sub
 
+    Private Sub btnTrial_Click(sender As Object, e As EventArgs) Handles btnTrial.Click
+        'UpdateOrInsertGroupedQtyToProcess()
+
+        'ProcessWIPMData()
+
+        'Subtract_VibOut()
+        'Subtract_LWOut()
+        'Subtract_AnnealingOut()
+        'Subtract_SputOut()
+
+        'Load_Avail_WIP()
+    End Sub
 End Class

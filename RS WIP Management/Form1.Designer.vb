@@ -34,6 +34,8 @@ Partial Class Form1
         Me.SAMToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.MenuStrip1 = New System.Windows.Forms.MenuStrip()
         Me.WIPToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ViewWIPToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.UpdateWIPToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.MenuToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.SettingsToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.PictureBox1 = New System.Windows.Forms.PictureBox()
@@ -46,17 +48,15 @@ Partial Class Form1
         Me.txtQty = New Guna.UI2.WinForms.Guna2TextBox()
         Me.txtLot = New Guna.UI2.WinForms.Guna2TextBox()
         Me.txtTransac = New Guna.UI2.WinForms.Guna2TextBox()
-        Me.Panel2 = New System.Windows.Forms.Panel()
+        Me.MainPanel = New System.Windows.Forms.Panel()
         Me.btnClear = New Guna.UI2.WinForms.Guna2Button()
         Me.txtProduct = New Guna.UI2.WinForms.Guna2TextBox()
         Me.lblfooter2 = New System.Windows.Forms.Label()
         Me.Panel1 = New System.Windows.Forms.Panel()
         Me.Main = New Guna.UI2.WinForms.Guna2CustomGradientPanel()
-        Me.UpdateWIPToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.ViewWIPToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.MenuStrip1.SuspendLayout()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.Panel2.SuspendLayout()
+        Me.MainPanel.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.Main.SuspendLayout()
         Me.SuspendLayout()
@@ -86,44 +86,46 @@ Partial Class Form1
         'PunchPressToolStripMenuItem
         '
         Me.PunchPressToolStripMenuItem.Name = "PunchPressToolStripMenuItem"
-        Me.PunchPressToolStripMenuItem.Size = New System.Drawing.Size(169, 22)
+        Me.PunchPressToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
         Me.PunchPressToolStripMenuItem.Text = "Punch Press"
         '
         'VibratorToolStripMenuItem
         '
         Me.VibratorToolStripMenuItem.Name = "VibratorToolStripMenuItem"
-        Me.VibratorToolStripMenuItem.Size = New System.Drawing.Size(169, 22)
+        Me.VibratorToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
         Me.VibratorToolStripMenuItem.Text = "Vibrator"
         '
         'LoadAndWashToolStripMenuItem
         '
         Me.LoadAndWashToolStripMenuItem.Name = "LoadAndWashToolStripMenuItem"
-        Me.LoadAndWashToolStripMenuItem.Size = New System.Drawing.Size(169, 22)
+        Me.LoadAndWashToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
         Me.LoadAndWashToolStripMenuItem.Text = "Load and Wash"
         '
         'AnnealingToolStripMenuItem
         '
         Me.AnnealingToolStripMenuItem.Name = "AnnealingToolStripMenuItem"
-        Me.AnnealingToolStripMenuItem.Size = New System.Drawing.Size(169, 22)
+        Me.AnnealingToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
         Me.AnnealingToolStripMenuItem.Text = "Annealing"
         '
         'WashToolStripMenuItem
         '
         Me.WashToolStripMenuItem.Name = "WashToolStripMenuItem"
-        Me.WashToolStripMenuItem.Size = New System.Drawing.Size(169, 22)
+        Me.WashToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
         Me.WashToolStripMenuItem.Text = "Wash"
+        Me.WashToolStripMenuItem.Visible = False
         '
         'SputToolStripMenuItem
         '
         Me.SputToolStripMenuItem.Name = "SputToolStripMenuItem"
-        Me.SputToolStripMenuItem.Size = New System.Drawing.Size(169, 22)
+        Me.SputToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
         Me.SputToolStripMenuItem.Text = "Sput"
         '
         'SAMToolStripMenuItem
         '
         Me.SAMToolStripMenuItem.Name = "SAMToolStripMenuItem"
-        Me.SAMToolStripMenuItem.Size = New System.Drawing.Size(169, 22)
+        Me.SAMToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
         Me.SAMToolStripMenuItem.Text = "SAM"
+        Me.SAMToolStripMenuItem.Visible = False
         '
         'MenuStrip1
         '
@@ -144,6 +146,18 @@ Partial Class Form1
         Me.WIPToolStripMenuItem.Size = New System.Drawing.Size(45, 21)
         Me.WIPToolStripMenuItem.Text = "WIP"
         '
+        'ViewWIPToolStripMenuItem
+        '
+        Me.ViewWIPToolStripMenuItem.Name = "ViewWIPToolStripMenuItem"
+        Me.ViewWIPToolStripMenuItem.Size = New System.Drawing.Size(162, 22)
+        Me.ViewWIPToolStripMenuItem.Text = "View WIP"
+        '
+        'UpdateWIPToolStripMenuItem
+        '
+        Me.UpdateWIPToolStripMenuItem.Name = "UpdateWIPToolStripMenuItem"
+        Me.UpdateWIPToolStripMenuItem.Size = New System.Drawing.Size(162, 22)
+        Me.UpdateWIPToolStripMenuItem.Text = "Update Target"
+        '
         'MenuToolStripMenuItem
         '
         Me.MenuToolStripMenuItem.Name = "MenuToolStripMenuItem"
@@ -159,13 +173,12 @@ Partial Class Form1
         '
         'PictureBox1
         '
-        Me.PictureBox1.Anchor = System.Windows.Forms.AnchorStyles.Top
         Me.PictureBox1.BackColor = System.Drawing.Color.Transparent
         Me.PictureBox1.Image = CType(resources.GetObject("PictureBox1.Image"), System.Drawing.Image)
-        Me.PictureBox1.Location = New System.Drawing.Point(17, 14)
+        Me.PictureBox1.Location = New System.Drawing.Point(15, 12)
         Me.PictureBox1.Margin = New System.Windows.Forms.Padding(2)
         Me.PictureBox1.Name = "PictureBox1"
-        Me.PictureBox1.Size = New System.Drawing.Size(228, 79)
+        Me.PictureBox1.Size = New System.Drawing.Size(249, 88)
         Me.PictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage
         Me.PictureBox1.TabIndex = 124
         Me.PictureBox1.TabStop = False
@@ -181,6 +194,7 @@ Partial Class Form1
         Me.Label5.Size = New System.Drawing.Size(147, 45)
         Me.Label5.TabIndex = 131
         Me.Label5.Text = "Quantity"
+        Me.Label5.Visible = False
         '
         'Label4
         '
@@ -193,6 +207,7 @@ Partial Class Form1
         Me.Label4.Size = New System.Drawing.Size(201, 45)
         Me.Label4.TabIndex = 130
         Me.Label4.Text = "Transaction"
+        Me.Label4.Visible = False
         '
         'Label3
         '
@@ -205,6 +220,7 @@ Partial Class Form1
         Me.Label3.Size = New System.Drawing.Size(188, 45)
         Me.Label3.TabIndex = 129
         Me.Label3.Text = "Lot number"
+        Me.Label3.Visible = False
         '
         'btnSubmit
         '
@@ -232,15 +248,17 @@ Partial Class Form1
         Me.btnSubmit.Size = New System.Drawing.Size(134, 56)
         Me.btnSubmit.TabIndex = 4
         Me.btnSubmit.Text = "Submit"
+        Me.btnSubmit.Visible = False
         '
         'lblProcessName
         '
+        Me.lblProcessName.Anchor = System.Windows.Forms.AnchorStyles.Top
         Me.lblProcessName.BackColor = System.Drawing.Color.Transparent
         Me.lblProcessName.Font = New System.Drawing.Font("Impact", 33.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.lblProcessName.ForeColor = System.Drawing.Color.White
-        Me.lblProcessName.Location = New System.Drawing.Point(309, 25)
+        Me.lblProcessName.Location = New System.Drawing.Point(245, 28)
         Me.lblProcessName.Name = "lblProcessName"
-        Me.lblProcessName.Size = New System.Drawing.Size(492, 56)
+        Me.lblProcessName.Size = New System.Drawing.Size(406, 56)
         Me.lblProcessName.TabIndex = 127
         Me.lblProcessName.Text = "Process"
         Me.lblProcessName.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
@@ -256,6 +274,7 @@ Partial Class Form1
         Me.Label2.Size = New System.Drawing.Size(230, 45)
         Me.Label2.TabIndex = 128
         Me.Label2.Text = "Product name"
+        Me.Label2.Visible = False
         '
         'txtQty
         '
@@ -281,6 +300,7 @@ Partial Class Form1
         Me.txtQty.SelectedText = ""
         Me.txtQty.Size = New System.Drawing.Size(431, 73)
         Me.txtQty.TabIndex = 3
+        Me.txtQty.Visible = False
         '
         'txtLot
         '
@@ -306,6 +326,7 @@ Partial Class Form1
         Me.txtLot.SelectedText = ""
         Me.txtLot.Size = New System.Drawing.Size(431, 73)
         Me.txtLot.TabIndex = 1
+        Me.txtLot.Visible = False
         '
         'txtTransac
         '
@@ -332,25 +353,29 @@ Partial Class Form1
         Me.txtTransac.SelectedText = ""
         Me.txtTransac.Size = New System.Drawing.Size(431, 73)
         Me.txtTransac.TabIndex = 2
+        Me.txtTransac.Visible = False
         '
-        'Panel2
+        'MainPanel
         '
-        Me.Panel2.BackColor = System.Drawing.Color.FromArgb(CType(CType(241, Byte), Integer), CType(CType(242, Byte), Integer), CType(CType(246, Byte), Integer))
-        Me.Panel2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
-        Me.Panel2.Controls.Add(Me.btnClear)
-        Me.Panel2.Controls.Add(Me.Label5)
-        Me.Panel2.Controls.Add(Me.Label4)
-        Me.Panel2.Controls.Add(Me.Label3)
-        Me.Panel2.Controls.Add(Me.btnSubmit)
-        Me.Panel2.Controls.Add(Me.Label2)
-        Me.Panel2.Controls.Add(Me.txtProduct)
-        Me.Panel2.Controls.Add(Me.txtQty)
-        Me.Panel2.Controls.Add(Me.txtLot)
-        Me.Panel2.Controls.Add(Me.txtTransac)
-        Me.Panel2.Location = New System.Drawing.Point(0, 109)
-        Me.Panel2.Name = "Panel2"
-        Me.Panel2.Size = New System.Drawing.Size(897, 499)
-        Me.Panel2.TabIndex = 124
+        Me.MainPanel.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.MainPanel.BackColor = System.Drawing.Color.FromArgb(CType(CType(241, Byte), Integer), CType(CType(242, Byte), Integer), CType(CType(246, Byte), Integer))
+        Me.MainPanel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
+        Me.MainPanel.Controls.Add(Me.btnClear)
+        Me.MainPanel.Controls.Add(Me.Label5)
+        Me.MainPanel.Controls.Add(Me.Label4)
+        Me.MainPanel.Controls.Add(Me.Label3)
+        Me.MainPanel.Controls.Add(Me.btnSubmit)
+        Me.MainPanel.Controls.Add(Me.Label2)
+        Me.MainPanel.Controls.Add(Me.txtProduct)
+        Me.MainPanel.Controls.Add(Me.txtQty)
+        Me.MainPanel.Controls.Add(Me.txtLot)
+        Me.MainPanel.Controls.Add(Me.txtTransac)
+        Me.MainPanel.Location = New System.Drawing.Point(0, 109)
+        Me.MainPanel.Name = "MainPanel"
+        Me.MainPanel.Size = New System.Drawing.Size(897, 499)
+        Me.MainPanel.TabIndex = 124
         '
         'btnClear
         '
@@ -378,6 +403,7 @@ Partial Class Form1
         Me.btnClear.Size = New System.Drawing.Size(134, 56)
         Me.btnClear.TabIndex = 5
         Me.btnClear.Text = "Clear"
+        Me.btnClear.Visible = False
         '
         'txtProduct
         '
@@ -403,6 +429,7 @@ Partial Class Form1
         Me.txtProduct.SelectedText = ""
         Me.txtProduct.Size = New System.Drawing.Size(431, 73)
         Me.txtProduct.TabIndex = 0
+        Me.txtProduct.Visible = False
         '
         'lblfooter2
         '
@@ -420,9 +447,11 @@ Partial Class Form1
         '
         'Panel1
         '
-        Me.Panel1.Anchor = System.Windows.Forms.AnchorStyles.None
+        Me.Panel1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.Panel1.BackColor = System.Drawing.SystemColors.Control
-        Me.Panel1.Controls.Add(Me.Panel2)
+        Me.Panel1.Controls.Add(Me.MainPanel)
         Me.Panel1.Controls.Add(Me.lblProcessName)
         Me.Panel1.Controls.Add(Me.PictureBox1)
         Me.Panel1.Location = New System.Drawing.Point(40, 42)
@@ -448,18 +477,6 @@ Partial Class Form1
         Me.Main.Size = New System.Drawing.Size(980, 701)
         Me.Main.TabIndex = 1
         '
-        'UpdateWIPToolStripMenuItem
-        '
-        Me.UpdateWIPToolStripMenuItem.Name = "UpdateWIPToolStripMenuItem"
-        Me.UpdateWIPToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
-        Me.UpdateWIPToolStripMenuItem.Text = "Update Target"
-        '
-        'ViewWIPToolStripMenuItem
-        '
-        Me.ViewWIPToolStripMenuItem.Name = "ViewWIPToolStripMenuItem"
-        Me.ViewWIPToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
-        Me.ViewWIPToolStripMenuItem.Text = "View WIP"
-        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -476,8 +493,8 @@ Partial Class Form1
         Me.MenuStrip1.ResumeLayout(False)
         Me.MenuStrip1.PerformLayout()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).EndInit()
-        Me.Panel2.ResumeLayout(False)
-        Me.Panel2.PerformLayout()
+        Me.MainPanel.ResumeLayout(False)
+        Me.MainPanel.PerformLayout()
         Me.Panel1.ResumeLayout(False)
         Me.Main.ResumeLayout(False)
         Me.Main.PerformLayout()
@@ -498,7 +515,7 @@ Partial Class Form1
     Friend WithEvents txtQty As Guna.UI2.WinForms.Guna2TextBox
     Friend WithEvents txtLot As Guna.UI2.WinForms.Guna2TextBox
     Friend WithEvents txtTransac As Guna.UI2.WinForms.Guna2TextBox
-    Friend WithEvents Panel2 As Panel
+    Friend WithEvents MainPanel As Panel
     Friend WithEvents txtProduct As Guna.UI2.WinForms.Guna2TextBox
     Friend WithEvents lblfooter2 As Label
     Friend WithEvents Panel1 As Panel

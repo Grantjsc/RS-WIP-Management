@@ -15,7 +15,7 @@ Option Explicit On
 Namespace My
     
     <Global.System.Runtime.CompilerServices.CompilerGeneratedAttribute(),  _
-     Global.System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.12.0.0"),  _
+     Global.System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.13.0.0"),  _
      Global.System.ComponentModel.EditorBrowsableAttribute(Global.System.ComponentModel.EditorBrowsableState.Advanced)>  _
     Partial Friend NotInheritable Class MySettings
         Inherits Global.System.Configuration.ApplicationSettingsBase
@@ -73,6 +73,39 @@ Namespace My
         Public ReadOnly Property SQL_Connection() As String
             Get
                 Return CType(Me("SQL_Connection"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.ConnectionString),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Data Source=BTMESSQLPRD01;Initial Catalog=RS;Persist Security Info=True;User ID=r"& _ 
+            "s;Password=dZE34EGv;TrustServerCertificate=True")>  _
+        Public ReadOnly Property RS_Connection() As String
+            Get
+                Return CType(Me("RS_Connection"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.ConnectionString),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Data Source=BTMESSQLPRD04;Initial Catalog=MESCoreReport_EBU_PH;Persist Security I"& _ 
+            "nfo=True;User ID=MESCoreReadOnly;Password=Mes@user;TrustServerCertificate=True")>  _
+        Public ReadOnly Property MES_Connection() As String
+            Get
+                Return CType(Me("MES_Connection"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.ConnectionString),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Data Source=BTMESSQLQA03;Initial Catalog=LFRSBackend;Persist Security Info=True;U"& _ 
+            "ser ID=mesph;Password=PHFuse;TrustServerCertificate=True")>  _
+        Public ReadOnly Property QA_Connection() As String
+            Get
+                Return CType(Me("QA_Connection"),String)
             End Get
         End Property
     End Class

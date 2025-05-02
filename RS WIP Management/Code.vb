@@ -46,6 +46,14 @@ Module Function_Module
         Sput_Process = False
         SAM_Process = False
 
+        With PunchPress_Form
+            .TopLevel = False
+            Form1.MainPanel.Controls.Add(PunchPress_Form)
+            .WindowState = FormWindowState.Maximized
+            .BringToFront()
+            .Show()
+        End With
+
     End Sub
 
     Sub Vibrator_clicked()
@@ -79,6 +87,14 @@ Module Function_Module
         Wash_Process = False
         Sput_Process = False
         SAM_Process = False
+
+        With Vibrator_Form
+            .TopLevel = False
+            Form1.MainPanel.Controls.Add(Vibrator_Form)
+            .WindowState = FormWindowState.Maximized
+            .BringToFront()
+            .Show()
+        End With
 
     End Sub
 
@@ -114,6 +130,14 @@ Module Function_Module
         Sput_Process = False
         SAM_Process = False
 
+        With LoadWash_Form
+            .TopLevel = False
+            Form1.MainPanel.Controls.Add(LoadWash_Form)
+            .WindowState = FormWindowState.Maximized
+            .BringToFront()
+            .Show()
+        End With
+
     End Sub
 
     Sub Annealing_clicked()
@@ -148,6 +172,14 @@ Module Function_Module
         Wash_Process = False
         Sput_Process = False
         SAM_Process = False
+
+        With Anneal_Form
+            .TopLevel = False
+            Form1.MainPanel.Controls.Add(Anneal_Form)
+            .WindowState = FormWindowState.Maximized
+            .BringToFront()
+            .Show()
+        End With
 
     End Sub
 
@@ -218,6 +250,14 @@ Module Function_Module
         Wash_Process = False
         Sput_Process = True
         SAM_Process = False
+
+        With Sput_Form
+            .TopLevel = False
+            Form1.MainPanel.Controls.Add(Sput_Form)
+            .WindowState = FormWindowState.Maximized
+            .BringToFront()
+            .Show()
+        End With
 
     End Sub
 

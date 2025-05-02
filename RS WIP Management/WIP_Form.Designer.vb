@@ -25,6 +25,8 @@ Partial Class WIP_Form
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(WIP_Form))
         Me.Guna2CustomGradientPanel1 = New Guna.UI2.WinForms.Guna2CustomGradientPanel()
         Me.GroupBoxTitle = New Guna.UI2.WinForms.Guna2GroupBox()
+        Me.btnTrial = New System.Windows.Forms.Button()
+        Me.DataGridView1 = New System.Windows.Forms.DataGridView()
         Me.btnUpdate = New Guna.UI2.WinForms.Guna2Button()
         Me.btnViewAll = New Guna.UI2.WinForms.Guna2Button()
         Me.btnLoad = New Guna.UI2.WinForms.Guna2CircleButton()
@@ -38,7 +40,6 @@ Partial Class WIP_Form
         Me.txtTarget = New Guna.UI2.WinForms.Guna2TextBox()
         Me.Label2 = New System.Windows.Forms.Label()
         Me.lblTitle = New System.Windows.Forms.Label()
-        Me.DataGridView1 = New System.Windows.Forms.DataGridView()
         Me.Guna2CustomGradientPanel1.SuspendLayout()
         Me.GroupBoxTitle.SuspendLayout()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -67,6 +68,7 @@ Partial Class WIP_Form
         Me.GroupBoxTitle.BorderColor = System.Drawing.Color.Black
         Me.GroupBoxTitle.BorderRadius = 10
         Me.GroupBoxTitle.BorderThickness = 5
+        Me.GroupBoxTitle.Controls.Add(Me.btnTrial)
         Me.GroupBoxTitle.Controls.Add(Me.DataGridView1)
         Me.GroupBoxTitle.Controls.Add(Me.btnUpdate)
         Me.GroupBoxTitle.Controls.Add(Me.btnViewAll)
@@ -91,6 +93,33 @@ Partial Class WIP_Form
         Me.GroupBoxTitle.TabIndex = 2
         Me.GroupBoxTitle.Text = "AVAILABLE WIP IN LINE"
         Me.GroupBoxTitle.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
+        '
+        'btnTrial
+        '
+        Me.btnTrial.Font = New System.Drawing.Font("Segoe UI", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnTrial.Location = New System.Drawing.Point(101, 45)
+        Me.btnTrial.Name = "btnTrial"
+        Me.btnTrial.Size = New System.Drawing.Size(81, 27)
+        Me.btnTrial.TabIndex = 149
+        Me.btnTrial.Text = "Go"
+        Me.btnTrial.UseVisualStyleBackColor = True
+        Me.btnTrial.Visible = False
+        '
+        'DataGridView1
+        '
+        Me.DataGridView1.AllowUserToAddRows = False
+        Me.DataGridView1.AllowUserToDeleteRows = False
+        Me.DataGridView1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.DataGridView1.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill
+        Me.DataGridView1.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells
+        Me.DataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        Me.DataGridView1.Location = New System.Drawing.Point(27, 87)
+        Me.DataGridView1.Name = "DataGridView1"
+        Me.DataGridView1.ReadOnly = True
+        Me.DataGridView1.Size = New System.Drawing.Size(785, 477)
+        Me.DataGridView1.TabIndex = 0
         '
         'btnUpdate
         '
@@ -326,22 +355,6 @@ Partial Class WIP_Form
         Me.lblTitle.Text = "Target WIP"
         Me.lblTitle.Visible = False
         '
-        'DataGridView1
-        '
-        Me.DataGridView1.AllowUserToAddRows = False
-        Me.DataGridView1.AllowUserToDeleteRows = False
-        Me.DataGridView1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
-            Or System.Windows.Forms.AnchorStyles.Left) _
-            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.DataGridView1.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill
-        Me.DataGridView1.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells
-        Me.DataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        Me.DataGridView1.Location = New System.Drawing.Point(27, 87)
-        Me.DataGridView1.Name = "DataGridView1"
-        Me.DataGridView1.ReadOnly = True
-        Me.DataGridView1.Size = New System.Drawing.Size(785, 477)
-        Me.DataGridView1.TabIndex = 0
-        '
         'WIP_Form
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -377,4 +390,5 @@ Partial Class WIP_Form
     Friend WithEvents dtpStartDate As Guna.UI2.WinForms.Guna2DateTimePicker
     Friend WithEvents btnViewAll As Guna.UI2.WinForms.Guna2Button
     Friend WithEvents btnUpdate As Guna.UI2.WinForms.Guna2Button
+    Friend WithEvents btnTrial As Button
 End Class

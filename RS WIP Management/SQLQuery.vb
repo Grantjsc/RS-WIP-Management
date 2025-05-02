@@ -11,8 +11,42 @@ Module Query_Module
     'Data Source=BTMESSQLDEV03;Initial Catalog=LFPH_RS;Persist Security Info=True;User ID=mesph;Password=PHFuse;TrustServerCertificate=True
 
 
+    '****************************< FOR MES connection >****************************
+    Public MES_connString As String = "Data Source=BTMESSQLPRD04;Initial Catalog=MESCoreReport_EBU_PH;Persist Security Info=True;User ID=MESCoreReadOnly;Password=Mes@user;TrustServerCertificate=True"
+    Public MES_Dbconnection As New SqlConnection(MES_connString)
+
+    Sub MES_ConOpen()
+        If MES_Dbconnection.State = ConnectionState.Closed Then
+            MES_Dbconnection.Open()
+        End If
+    End Sub
+    Sub MES_ConClose()
+        If MES_Dbconnection.State = ConnectionState.Open Then
+            MES_Dbconnection.Close()
+        End If
+    End Sub
+
+    '****************************< FOR QA connection >****************************
+    Public QA_connString As String = "Data Source=BTMESSQLQA03;Initial Catalog=LFRSBackend;Persist Security Info=True;User ID=mesph;Password=PHFuse;TrustServerCertificate=True"
+    Public QA_Dbconnection As New SqlConnection(QA_connString)
+
+    Sub QA_ConOpen()
+        If QA_Dbconnection.State = ConnectionState.Closed Then
+            QA_Dbconnection.Open()
+        End If
+    End Sub
+    Sub QA_ConClose()
+        If QA_Dbconnection.State = ConnectionState.Open Then
+            QA_Dbconnection.Close()
+        End If
+    End Sub
+
     '****************************< FOR GENERAL USE >****************************
-    Public connString As String = "Data Source=BTMESSQLDEV03;Initial Catalog=LFPH_RS;Persist Security Info=True;User ID=mesph;Password=PHFuse;TrustServerCertificate=True"
+
+    'Data Source=BTMESSQLPRD01;Initial Catalog=RS;Persist Security Info=True;User ID=rs;Password=dZE34EGv;TrustServerCertificate=True
+    'Data Source=BTMESSQLDEV03;Initial Catalog=LFPH_RS;Persist Security Info=True;User ID=mesph;Password=PHFuse;TrustServerCertificate=True
+
+    Public connString As String = "Data Source=BTMESSQLPRD01;Initial Catalog=RS;Persist Security Info=True;User ID=rs;Password=dZE34EGv;TrustServerCertificate=True"
     Public Dbconnection As New SqlConnection(connString)
 
     Sub ConOpen()
@@ -1689,83 +1723,17 @@ Module Query_Module
 
         If Dbconnection.State = ConnectionState.Open Then
             Try
-                ' Determine the date range for reset logic
-                Dim startDate As DateTime
-                Dim endDate As DateTime
-                Dim now As DateTime = DateTime.Now
-                Dim conditionAfter6AM As Boolean = now.TimeOfDay >= TimeSpan.FromHours(6)
-
-                If conditionAfter6AM Then
-                    ' After 6:00 AM: current day's 6:00 AM to next day's 6:00 AM
-                    startDate = now.Date.AddHours(6)
-                    endDate = now.Date.AddDays(1).AddHours(6)
-                Else
-                    ' Before or at 6:00 AM: previous day's 6:00 AM to today's 6:00 AM
-                    startDate = now.Date.AddDays(-1).AddHours(6)
-                    endDate = now.Date.AddHours(6)
-                End If
-
-                ' Check if Target_WIP reset is required
-                Dim resetCheckCmd As New SqlCommand("SELECT COUNT(*) FROM Reset_Log WHERE Reset_Date = @ResetDate", Dbconnection)
-                resetCheckCmd.Parameters.AddWithValue("@ResetDate", startDate.Date)
-                Dim resetPerformed As Integer = CInt(resetCheckCmd.ExecuteScalar())
-
-                If resetPerformed = 0 Then
-                    ' Step 1: Reset SAM_Out and Target_WIP for all rows
-                    Dim resetCmd As New SqlCommand("UPDATE WIPM_Process_tb SET [SAM_Out] = 0, [Target_WIP] = 0", Dbconnection)
-                    resetCmd.ExecuteNonQuery()
-
-                    ' Step 2: Distribute GAP values
-                    Dim selectProductsCmd As New SqlCommand("SELECT DISTINCT [Product] FROM WIPM_Process_tb WHERE [GAP] <> 0", Dbconnection)
-                    Using productReader As SqlDataReader = selectProductsCmd.ExecuteReader()
-                        While productReader.Read()
-                            Dim productName As String = productReader("Product").ToString()
-
-                            ' Get the first row for the current product with non-zero GAP
-                            Dim selectGapCmd As New SqlCommand("SELECT TOP 1 [ID], [GAP] FROM WIPM_Process_tb WHERE [Product] = @Product AND [GAP] <> 0", Dbconnection)
-                            selectGapCmd.Parameters.AddWithValue("@Product", productName)
-
-                            Using gapReader As SqlDataReader = selectGapCmd.ExecuteReader()
-                                If gapReader.Read() Then
-                                    Dim selectedID As Integer = CInt(gapReader("ID"))
-                                    Dim gapValue As Integer = CInt(gapReader("GAP"))
-
-                                    ' Update SAM_Out for the selected row
-                                    Dim updateSamOutCmd As New SqlCommand("UPDATE WIPM_Process_tb SET [SAM_Out] = @Gap WHERE [ID] = @ID", Dbconnection)
-                                    updateSamOutCmd.Parameters.AddWithValue("@Gap", gapValue)
-                                    updateSamOutCmd.Parameters.AddWithValue("@ID", selectedID)
-
-                                    updateSamOutCmd.ExecuteNonQuery()
-                                End If
-                            End Using
-                        End While
-                    End Using
-
-                    ' Notify success
-                    'MessageBox.Show("SAM_Out and Target_WIP have been successfully updated.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
-
-
-                    ' Log the reset in the Reset_Log table
-                    Dim logResetCmd As New SqlCommand("INSERT INTO Reset_Log (Reset_Date) VALUES (@ResetDate)", Dbconnection)
-                    logResetCmd.Parameters.AddWithValue("@ResetDate", startDate.Date)
-                    logResetCmd.ExecuteNonQuery()
-                End If
-
-                ' Load all data from the database (no date filter here)
                 command.Connection = Dbconnection
-                command.CommandText = "SELECT Product, SUM(PP_Out) AS PP_OUT, SUM(Vib_Out) AS VIB_OUT, " &
-                                  "SUM(LW_Out) AS LW_OUT, SUM(Annealing_Out) AS ANN_OUT, " &
-                                  "SUM(Wash_Out) AS W_OUT, SUM(Sput_Out) AS SPUT_OUT, " &
-                                  "SUM(SAM_OUT) AS SAM_OUT, MAX(Target_WIP) AS Target_WIP, MAX(GAP) AS GAP " &
-                                  "FROM WIPM_Process_tb " &
-                                  "GROUP BY Product"
+                command.CommandText = "SELECT Product, SUM(Vib_Out) AS VIB_OUT, " &
+                              "SUM(LW_Out) AS LW_OUT, SUM(Annealing_Out) AS ANN_OUT, " &
+                              "SUM(Sput_Out) AS SPUT_OUT, MAX(Target_WIP) AS Target_WIP, MAX(GAP) AS GAP " &
+                              "FROM WIPM_Process_tb WHERE NMR = 0 GROUP BY Product"
 
-                ' Execute the query and load the results into the DataTable
                 Using rdr As SqlDataReader = command.ExecuteReader()
                     table.Load(rdr)
                 End Using
 
-                ' Bind the DataTable to the DataGridView
+                ' After binding the DataTable to the DataGridView
                 WIP_Form.DataGridView1.DataSource = table
 
                 ' Format DataGridView columns
@@ -1779,14 +1747,17 @@ Module Query_Module
 
                 ' Rename column headers for clarity
                 WIP_Form.DataGridView1.Columns("Product").HeaderText = "Product Name"
-                WIP_Form.DataGridView1.Columns("PP_OUT").HeaderText = "Punch Press Out"
-                WIP_Form.DataGridView1.Columns("VIB_OUT").HeaderText = "Vibrator Out"
-                WIP_Form.DataGridView1.Columns("LW_OUT").HeaderText = "Load and Wash Out"
-                WIP_Form.DataGridView1.Columns("ANN_OUT").HeaderText = "Annealing Out"
-                WIP_Form.DataGridView1.Columns("W_OUT").HeaderText = "Wash Out"
-                WIP_Form.DataGridView1.Columns("SPUT_OUT").HeaderText = "Sput Out"
-                WIP_Form.DataGridView1.Columns("SAM_OUT").HeaderText = "SAM Out"
+                WIP_Form.DataGridView1.Columns("VIB_OUT").HeaderText = "Vibrator"
+                WIP_Form.DataGridView1.Columns("LW_OUT").HeaderText = "Load and Wash"
+                WIP_Form.DataGridView1.Columns("ANN_OUT").HeaderText = "Annealing"
+                WIP_Form.DataGridView1.Columns("SPUT_OUT").HeaderText = "Sput"
                 WIP_Form.DataGridView1.Columns("Target_WIP").HeaderText = "Target"
+
+                ' Clear row styles to prevent conflicts
+                For Each row As DataGridViewRow In WIP_Form.DataGridView1.Rows
+                    row.DefaultCellStyle.BackColor = Color.Empty
+                    row.DefaultCellStyle.ForeColor = Color.Empty
+                Next
 
                 ' Apply conditional formatting at the cell level
                 For Each row As DataGridViewRow In WIP_Form.DataGridView1.Rows
@@ -1820,7 +1791,148 @@ Module Query_Module
         Else
             MessageBox.Show("Database connection failed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End If
+
     End Sub
+
+
+    'Sub Load_Avail_WIP()
+    '    Dim command As New SqlCommand("", Dbconnection)
+    '    Dim table As New DataTable
+
+    '    ConOpen()
+
+    '    If Dbconnection.State = ConnectionState.Open Then
+    '        Try
+    '            ' Determine the date range for reset logic
+    '            Dim startDate As DateTime
+    '            Dim endDate As DateTime
+    '            Dim now As DateTime = DateTime.Now
+    '            Dim conditionAfter6AM As Boolean = now.TimeOfDay >= TimeSpan.FromHours(6)
+
+    '            If conditionAfter6AM Then
+    '                ' After 6:00 AM: current day's 6:00 AM to next day's 6:00 AM
+    '                startDate = now.Date.AddHours(6)
+    '                endDate = now.Date.AddDays(1).AddHours(6)
+    '            Else
+    '                ' Before or at 6:00 AM: previous day's 6:00 AM to today's 6:00 AM
+    '                startDate = now.Date.AddDays(-1).AddHours(6)
+    '                endDate = now.Date.AddHours(6)
+    '            End If
+
+    '            ' Check if Target_WIP reset is required
+    '            Dim resetCheckCmd As New SqlCommand("SELECT COUNT(*) FROM Reset_Log WHERE Reset_Date = @ResetDate", Dbconnection)
+    '            resetCheckCmd.Parameters.AddWithValue("@ResetDate", startDate.Date)
+    '            Dim resetPerformed As Integer = CInt(resetCheckCmd.ExecuteScalar())
+
+    '            If resetPerformed = 0 Then
+    '                ' Step 1: Reset SAM_Out and Target_WIP for all rows
+    '                Dim resetCmd As New SqlCommand("UPDATE WIPM_Process_tb SET [Sput_Out] = 0, [Target_WIP] = 0", Dbconnection)
+    '                resetCmd.ExecuteNonQuery()
+
+    '                ' Step 2: Distribute GAP values
+    '                Dim selectProductsCmd As New SqlCommand("SELECT DISTINCT [Product] FROM WIPM_Process_tb WHERE [GAP] <> 0", Dbconnection)
+    '                Using productReader As SqlDataReader = selectProductsCmd.ExecuteReader()
+    '                    While productReader.Read()
+    '                        Dim productName As String = productReader("Product").ToString()
+
+    '                        ' Get the first row for the current product with non-zero GAP
+    '                        Dim selectGapCmd As New SqlCommand("SELECT TOP 1 [ID], [GAP] FROM WIPM_Process_tb WHERE [Product] = @Product AND [GAP] <> 0", Dbconnection)
+    '                        selectGapCmd.Parameters.AddWithValue("@Product", productName)
+
+    '                        Using gapReader As SqlDataReader = selectGapCmd.ExecuteReader()
+    '                            If gapReader.Read() Then
+    '                                Dim selectedID As Integer = CInt(gapReader("ID"))
+    '                                Dim gapValue As Integer = CInt(gapReader("GAP"))
+
+    '                                ' Update SAM_Out for the selected row
+    '                                Dim updateSamOutCmd As New SqlCommand("UPDATE WIPM_Process_tb SET [Sput_Out] = @Gap WHERE [ID] = @ID", Dbconnection)
+    '                                updateSamOutCmd.Parameters.AddWithValue("@Gap", gapValue)
+    '                                updateSamOutCmd.Parameters.AddWithValue("@ID", selectedID)
+
+    '                                updateSamOutCmd.ExecuteNonQuery()
+    '                            End If
+    '                        End Using
+    '                    End While
+    '                End Using
+
+    '                ' Notify success
+    '                'MessageBox.Show("SAM_Out and Target_WIP have been successfully updated.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+
+    '                ' Log the reset in the Reset_Log table
+    '                Dim logResetCmd As New SqlCommand("INSERT INTO Reset_Log (Reset_Date) VALUES (@ResetDate)", Dbconnection)
+    '                logResetCmd.Parameters.AddWithValue("@ResetDate", startDate.Date)
+    '                logResetCmd.ExecuteNonQuery()
+    '            End If
+
+    '            ' Load all data from the database (no date filter here)
+    '            command.Connection = Dbconnection
+    '            command.CommandText = "SELECT Product, SUM(PP_Out) AS PP_OUT, SUM(Vib_Out) AS VIB_OUT, " &
+    '                              "SUM(LW_Out) AS LW_OUT, SUM(Annealing_Out) AS ANN_OUT, " &
+    '                              "SUM(Sput_Out) AS SPUT_OUT, " &
+    '                              "MAX(Target_WIP) AS Target_WIP, MAX(GAP) AS GAP " &
+    '                              "FROM WIPM_Process_tb " &
+    '                              "GROUP BY Product"
+
+    '            ' Execute the query and load the results into the DataTable
+    '            Using rdr As SqlDataReader = command.ExecuteReader()
+    '                table.Load(rdr)
+    '            End Using
+
+    '            ' Bind the DataTable to the DataGridView
+    '            WIP_Form.DataGridView1.DataSource = table
+
+    '            ' Format DataGridView columns
+    '            For Each column As DataGridViewColumn In WIP_Form.DataGridView1.Columns
+    '                column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 11, FontStyle.Bold)
+    '                column.HeaderCell.Style.ForeColor = Color.White
+    '                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+    '                column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+    '                column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 10)
+    '            Next
+
+    '            ' Rename column headers for clarity
+    '            WIP_Form.DataGridView1.Columns("Product").HeaderText = "Product Name"
+    '            WIP_Form.DataGridView1.Columns("PP_OUT").HeaderText = "Punch Press Out"
+    '            WIP_Form.DataGridView1.Columns("VIB_OUT").HeaderText = "Vibrator Out"
+    '            WIP_Form.DataGridView1.Columns("LW_OUT").HeaderText = "Load and Wash Out"
+    '            WIP_Form.DataGridView1.Columns("ANN_OUT").HeaderText = "Annealing Out"
+    '            WIP_Form.DataGridView1.Columns("SPUT_OUT").HeaderText = "Sput Out"
+    '            WIP_Form.DataGridView1.Columns("Target_WIP").HeaderText = "Target"
+
+    '            ' Apply conditional formatting at the cell level
+    '            For Each row As DataGridViewRow In WIP_Form.DataGridView1.Rows
+    '                For Each cell As DataGridViewCell In row.Cells
+    '                    Dim cellValue As Decimal
+    '                    ' Check if the cell value is numeric and negative
+    '                    If Decimal.TryParse(cell.Value?.ToString(), cellValue) AndAlso cellValue < 0 Then
+    '                        cell.Style.BackColor = Color.Red
+    '                        cell.Style.ForeColor = Color.White
+    '                    Else
+    '                        ' Reset to default style for non-negative or non-numeric values
+    '                        cell.Style.BackColor = Color.Empty
+    '                        cell.Style.ForeColor = Color.Empty
+    '                    End If
+    '                Next
+    '            Next
+
+    '            ' Style the DataGridView
+    '            WIP_Form.DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+    '            WIP_Form.DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
+    '            WIP_Form.DataGridView1.EnableHeadersVisualStyles = False
+    '            WIP_Form.DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+    '        Catch ex As Exception
+    '            ' Handle any exceptions
+    '            MessageBox.Show("Error: " & ex.Message, "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+    '        Finally
+    '            ' Always close the connection
+    '            ConClose()
+    '        End Try
+    '    Else
+    '        MessageBox.Show("Database connection failed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+    '    End If
+    'End Sub
 
     Sub SAM_sub_Gap()
         Dim command As New SqlCommand("", Dbconnection)
@@ -1830,9 +1942,9 @@ Module Query_Module
 
         If Dbconnection.State = ConnectionState.Open Then
             Try
-                ' Step 1: Load the original data with SUM(SAM_OUT) and MAX(GAP) grouped by product
+                ' Step 1: Load the original data with SUM(Sput_Out) and MAX(GAP) grouped by product
                 command.Connection = Dbconnection
-                command.CommandText = "SELECT Product, SUM(SAM_OUT) AS Total_SAM_OUT, MAX(Target_WIP) AS Target " &
+                command.CommandText = "SELECT Product, SUM(Sput_Out) AS Total_Sput_Out, MAX(Target_WIP) AS Target " &
                                   "FROM WIPM_Process_tb " &
                                   "GROUP BY Product"
 
@@ -1841,13 +1953,13 @@ Module Query_Module
                     table.Load(rdr)
                 End Using
 
-                ' Step 2: Update GAP for each row using the original SUM(SAM_OUT) and MAX(GAP)
+                ' Step 2: Update GAP for each row using the original SUM(Sput_Out) and MAX(GAP)
                 For Each row As DataRow In table.Rows
                     Dim product As String = row("Product").ToString()
-                    Dim totalSamOut As Integer = CInt(row("Total_SAM_OUT"))
+                    Dim totalSamOut As Integer = CInt(row("Total_Sput_Out"))
                     Dim maxGap As Integer = CInt(row("Target"))
 
-                    ' Calculate the new GAP as SUM(SAM_OUT) - MAX(GAP)
+                    ' Calculate the new GAP as SUM(Sput_Out) - MAX(GAP)
                     Dim newGap As Integer = totalSamOut - maxGap
 
                     ' Step 3: Update only the rows for the current product
@@ -2194,7 +2306,10 @@ Module Query_Module
                 Next
 
                 ' Rename column headers for clarity
+                'UpdateWIP_Form.DataGridView1.Columns("Product").ReadOnly = True
                 UpdateWIP_Form.DataGridView1.Columns("Product").HeaderText = "Product Name"
+
+                'UpdateWIP_Form.DataGridView1.Columns("Target_WIP").ReadOnly = False
                 UpdateWIP_Form.DataGridView1.Columns("Target_WIP").HeaderText = "Target"
 
                 ' Clear row styles to prevent conflicts
@@ -2220,6 +2335,7 @@ Module Query_Module
                 Next
 
                 ' Style the DataGridView
+                UpdateWIP_Form.DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
                 UpdateWIP_Form.DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
                 UpdateWIP_Form.DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
                 UpdateWIP_Form.DataGridView1.EnableHeadersVisualStyles = False
@@ -2286,8 +2402,8 @@ Module Query_Module
 
 
             Dim query As String = "UPDATE WIPM_Process_tb 
-                               SET Target_WIP = @product, GAP = @gap 
-                               WHERE Product = @Prod"
+                               SET Target_WIP = @Trgt, GAP = @gap 
+                               WHERE Product = @product"
 
             Using command As New SqlCommand(query, Dbconnection)
                 command.Parameters.AddWithValue("@Trgt", Target)
@@ -2308,35 +2424,2463 @@ Module Query_Module
         End Try
     End Sub
 
+    'Sub UpdateAll()
+
+    '    ConOpen()
+
+    '    For Each row As DataGridViewRow In UpdateWIP_Form.DataGridView1.Rows
+    '        ' Ensure the row is not a new row
+    '        If Not row.IsNewRow Then
+    '            ' Extract the values from the DataGridView
+    '            Dim product As String = row.Cells("Product").Value.ToString()
+    '            Dim targetWIP As String = row.Cells("Target_WIP").Value.ToString()
+
+    '            ' Define the UPDATE query
+    '            Dim query As String = "UPDATE WIPM_Process_tb SET Target_WIP = @TargetWIP WHERE Product = @Product"
+
+    '            ' Create an SqlCommand and add parameters
+    '            Using command As New SqlCommand(query, Dbconnection)
+    '                command.Parameters.AddWithValue("@TargetWIP", targetWIP)
+    '                command.Parameters.AddWithValue("@Product", product)
+
+    '                ' Execute the command
+    '                Try
+    '                    command.ExecuteNonQuery()
+    '                Catch ex As Exception
+    '                    MessageBox.Show($"Error updating Product '{product}': {ex.Message}")
+    '                End Try
+    '            End Using
+    '        End If
+    '    Next
+    '    ConClose()
+    '    MessageBox.Show("Target WIP is now updated.")
+    'End Sub
+
     Sub UpdateAll()
+        If UpdateWIP_Form.DataGridView1.DataSource Is Nothing Then
+            MessageBox.Show("No data available to update.", "Update Failed", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Exit Sub
+        End If
 
         ConOpen()
 
-        For Each row As DataGridViewRow In UpdateWIP_Form.DataGridView1.Rows
-            ' Ensure the row is not a new row
-            If Not row.IsNewRow Then
-                ' Extract the values from the DataGridView
-                Dim product As String = row.Cells("Product").Value.ToString()
-                Dim targetWIP As String = row.Cells("Target_WIP").Value.ToString()
+        If Dbconnection.State = ConnectionState.Open Then
+            Try
+                For Each row As DataGridViewRow In UpdateWIP_Form.DataGridView1.Rows
+                    If Not row.IsNewRow Then
+                        Dim id As Integer
+                        Dim targetWIPValue As Decimal
 
-                ' Define the UPDATE query
-                Dim query As String = "UPDATE WIPM_Process_tb SET Target_WIP = @TargetWIP WHERE Product = @Product"
+                        ' Get ID and Target_WIP safely
+                        If Integer.TryParse(row.Cells("ID").Value?.ToString(), id) AndAlso
+                       Decimal.TryParse(row.Cells("Target_WIP").Value?.ToString(), targetWIPValue) Then
 
-                ' Create an SqlCommand and add parameters
-                Using command As New SqlCommand(query, Dbconnection)
-                    command.Parameters.AddWithValue("@TargetWIP", targetWIP)
-                    command.Parameters.AddWithValue("@Product", product)
+                            Using cmd As New SqlCommand("UPDATE WIPM_Process_tb SET Target_WIP = @TargetWIP WHERE ID = @ID", Dbconnection)
+                                cmd.Parameters.AddWithValue("@TargetWIP", targetWIPValue)
+                                cmd.Parameters.AddWithValue("@ID", id)
+                                cmd.ExecuteNonQuery()
+                            End Using
+                        End If
+                    End If
+                Next
 
-                    ' Execute the command
-                    Try
-                        command.ExecuteNonQuery()
-                    Catch ex As Exception
-                        MessageBox.Show($"Error updating Product '{product}': {ex.Message}")
-                    End Try
-                End Using
-            End If
-        Next
-        ConClose()
-        MessageBox.Show("Target WIP is now updated.")
+                MessageBox.Show("All records successfully updated!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+            Catch ex As Exception
+                MessageBox.Show("Error updating records: " & ex.Message, "Update Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Finally
+                ConClose()
+            End Try
+        Else
+            MessageBox.Show("Database connection failed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End If
     End Sub
+
+
+    '============================= < FOR WIP AUTO FETCH DATA > ============================
+
+    Sub Insert_PUNCHPRESS()
+        Try
+            MES_ConOpen()
+            QA_ConOpen()
+            ConOpen()
+
+            Dim today As String = DateTime.Now.ToString("yyyy-MM-dd")
+
+            ' STEP 1: Load existing WIPM records for today
+            Dim existingQuery As String = "
+            SELECT ProductionLotNumber, TrackOutTime 
+            FROM WIPM_Data_tb 
+            WHERE CONVERT(date, TrackOutTime) = @TodayDate"
+            Dim existingCmd As New SqlCommand(existingQuery, Dbconnection)
+            existingCmd.Parameters.AddWithValue("@TodayDate", today)
+
+            Dim existingSet As New HashSet(Of String)
+            Using reader = existingCmd.ExecuteReader()
+                While reader.Read()
+                    Dim key = reader("ProductionLotNumber").ToString() & "|" & Convert.ToDateTime(reader("TrackOutTime")).ToString("s")
+                    existingSet.Add(key)
+                End While
+            End Using
+
+            ' STEP 2: Load all deburr data for today
+            Dim deburrQuery As String = "
+            SELECT ProductionLotNumber, EQPDescription, TrackOutTime 
+            FROM [stMES_cut&form] 
+            WHERE CONVERT(date, TrackOutTime) = @TodayDate"
+            Dim deburrCmd As New SqlCommand(deburrQuery, MES_Dbconnection)
+            deburrCmd.Parameters.AddWithValue("@TodayDate", today)
+
+            Dim deburrList As New List(Of Dictionary(Of String, Object))
+            Using reader = deburrCmd.ExecuteReader()
+                While reader.Read()
+                    Dim row As New Dictionary(Of String, Object)
+                    row("ProductionLotNumber") = reader("ProductionLotNumber")
+                    row("EQPDescription") = reader("EQPDescription")
+                    row("TrackOutTime") = Convert.ToDateTime(reader("TrackOutTime"))
+                    deburrList.Add(row)
+                End While
+            End Using
+
+            ' STEP 3: Prepare one command for inserting
+            Dim insertQuery As String = "
+            INSERT INTO WIPM_Data_tb 
+            (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode) 
+            VALUES (@NMR, @ProductionLotNumber, @EQPDescription, @TrackOutTime, @ReedType, @Qty, @Description, @LotCode)"
+            Dim insertCmd As New SqlCommand(insertQuery, Dbconnection)
+
+            For Each row In deburrList
+                Dim lotNum As String = row("ProductionLotNumber").ToString()
+                Dim trackOut As DateTime = CType(row("TrackOutTime"), DateTime)
+                Dim key = lotNum & "|" & trackOut.ToString("s")
+
+                If existingSet.Contains(key) Then Continue For
+
+                ' STEP 4: Load SLR data for the LotNum
+                Dim slrQuery As String = "SELECT TOP 1 * FROM Component_SLR WHERE LotN = @LotN"
+                Dim slrCmd As New SqlCommand(slrQuery, QA_Dbconnection)
+                slrCmd.Parameters.AddWithValue("@LotN", lotNum)
+
+                Using slrReader = slrCmd.ExecuteReader()
+                    If slrReader.Read() Then
+                        insertCmd.Parameters.Clear()
+                        insertCmd.Parameters.AddWithValue("@NMR", 0)
+                        insertCmd.Parameters.AddWithValue("@ProductionLotNumber", lotNum)
+                        insertCmd.Parameters.AddWithValue("@EQPDescription", row("EQPDescription").ToString())
+                        insertCmd.Parameters.AddWithValue("@TrackOutTime", trackOut)
+                        insertCmd.Parameters.AddWithValue("@ReedType", slrReader("ReedType"))
+                        insertCmd.Parameters.AddWithValue("@Qty", slrReader("Qty"))
+                        insertCmd.Parameters.AddWithValue("@Description", slrReader("Description"))
+                        insertCmd.Parameters.AddWithValue("@LotCode", slrReader("LotCode"))
+                        insertCmd.ExecuteNonQuery()
+                    End If
+                End Using
+            Next
+
+            MsgBox("Optimized insert complete (duplicates skipped).")
+
+        Catch ex As Exception
+            MsgBox("Error: " & ex.Message)
+        Finally
+            ConClose()
+            MES_ConClose()
+            QA_ConClose()
+        End Try
+    End Sub
+
+    Sub Insert_PUNCHPRESS_Yesterday()
+        Try
+            MES_ConOpen()
+            QA_ConOpen()
+            ConOpen()
+
+            ' Get yesterday's date
+            Dim yesterday As String = DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd")
+
+            ' STEP 1: Load existing WIPM records for yesterday
+            Dim existingQuery As String = "
+            SELECT ProductionLotNumber, TrackOutTime 
+            FROM WIPM_Data_tb 
+            WHERE CONVERT(date, TrackOutTime) = @DateParam"
+            Dim existingCmd As New SqlCommand(existingQuery, Dbconnection)
+            existingCmd.Parameters.AddWithValue("@DateParam", yesterday)
+
+            Dim existingSet As New HashSet(Of String)
+            Using reader = existingCmd.ExecuteReader()
+                While reader.Read()
+                    Dim key = reader("ProductionLotNumber").ToString() & "|" & Convert.ToDateTime(reader("TrackOutTime")).ToString("s")
+                    existingSet.Add(key)
+                End While
+            End Using
+
+            ' STEP 2: Load all deburr data for yesterday
+            Dim deburrQuery As String = "
+            SELECT ProductionLotNumber, EQPDescription, TrackOutTime 
+            FROM [stMES_cut&form] 
+            WHERE CONVERT(date, TrackOutTime) = @DateParam"
+            Dim deburrCmd As New SqlCommand(deburrQuery, MES_Dbconnection)
+            deburrCmd.Parameters.AddWithValue("@DateParam", yesterday)
+
+            Dim deburrList As New List(Of Dictionary(Of String, Object))
+            Using reader = deburrCmd.ExecuteReader()
+                While reader.Read()
+                    Dim row As New Dictionary(Of String, Object)
+                    row("ProductionLotNumber") = reader("ProductionLotNumber")
+                    row("EQPDescription") = reader("EQPDescription")
+                    row("TrackOutTime") = Convert.ToDateTime(reader("TrackOutTime"))
+                    deburrList.Add(row)
+                End While
+            End Using
+
+            ' STEP 3: Prepare one command for inserting
+            Dim insertQuery As String = "
+            INSERT INTO WIPM_Data_tb 
+            (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode) 
+            VALUES (@NMR, @ProductionLotNumber, @EQPDescription, @TrackOutTime, @ReedType, @Qty, @Description, @LotCode)"
+            Dim insertCmd As New SqlCommand(insertQuery, Dbconnection)
+
+            For Each row In deburrList
+                Dim lotNum As String = row("ProductionLotNumber").ToString()
+                Dim trackOut As DateTime = CType(row("TrackOutTime"), DateTime)
+                Dim key = lotNum & "|" & trackOut.ToString("s")
+
+                If existingSet.Contains(key) Then Continue For
+
+                ' STEP 4: Load SLR data for the LotNum
+                Dim slrQuery As String = "SELECT TOP 1 * FROM Component_SLR WHERE LotN = @LotN"
+                Dim slrCmd As New SqlCommand(slrQuery, QA_Dbconnection)
+                slrCmd.Parameters.AddWithValue("@LotN", lotNum)
+
+                Using slrReader = slrCmd.ExecuteReader()
+                    If slrReader.Read() Then
+                        insertCmd.Parameters.Clear()
+                        insertCmd.Parameters.AddWithValue("@NMR", 0)
+                        insertCmd.Parameters.AddWithValue("@ProductionLotNumber", lotNum)
+                        insertCmd.Parameters.AddWithValue("@EQPDescription", row("EQPDescription").ToString())
+                        insertCmd.Parameters.AddWithValue("@TrackOutTime", trackOut)
+                        insertCmd.Parameters.AddWithValue("@ReedType", slrReader("ReedType"))
+                        insertCmd.Parameters.AddWithValue("@Qty", slrReader("Qty"))
+                        insertCmd.Parameters.AddWithValue("@Description", slrReader("Description"))
+                        insertCmd.Parameters.AddWithValue("@LotCode", slrReader("LotCode"))
+                        insertCmd.ExecuteNonQuery()
+                    End If
+                End Using
+            Next
+
+            MsgBox("Optimized insert complete (duplicates skipped).")
+
+        Catch ex As Exception
+            MsgBox("Error: " & ex.Message)
+        Finally
+            ConClose()
+            MES_ConClose()
+            QA_ConClose()
+        End Try
+    End Sub
+
+    Sub Insert_DEBUR()
+        Try
+            MES_ConOpen()
+            QA_ConOpen()
+            ConOpen()
+
+            Dim today As String = DateTime.Now.ToString("yyyy-MM-dd")
+
+            ' STEP 1: Load existing WIPM records for today
+            Dim existingQuery As String = "
+            SELECT ProductionLotNumber, TrackOutTime 
+            FROM WIPM_Data_tb 
+            WHERE CONVERT(date, TrackOutTime) = @TodayDate"
+            Dim existingCmd As New SqlCommand(existingQuery, Dbconnection)
+            existingCmd.Parameters.AddWithValue("@TodayDate", today)
+
+            Dim existingSet As New HashSet(Of String)
+            Using reader = existingCmd.ExecuteReader()
+                While reader.Read()
+                    Dim key = reader("ProductionLotNumber").ToString() & "|" & Convert.ToDateTime(reader("TrackOutTime")).ToString("s")
+                    existingSet.Add(key)
+                End While
+            End Using
+
+            ' STEP 2: Load all deburr data for today
+            Dim deburrQuery As String = "
+            SELECT ProductionLotNumber, EQPDescription, TrackOutTime 
+            FROM stMES_deburr 
+            WHERE CONVERT(date, TrackOutTime) = @TodayDate"
+            Dim deburrCmd As New SqlCommand(deburrQuery, MES_Dbconnection)
+            deburrCmd.Parameters.AddWithValue("@TodayDate", today)
+
+            Dim deburrList As New List(Of Dictionary(Of String, Object))
+            Using reader = deburrCmd.ExecuteReader()
+                While reader.Read()
+                    Dim row As New Dictionary(Of String, Object)
+                    row("ProductionLotNumber") = reader("ProductionLotNumber")
+                    row("EQPDescription") = reader("EQPDescription")
+                    row("TrackOutTime") = Convert.ToDateTime(reader("TrackOutTime"))
+                    deburrList.Add(row)
+                End While
+            End Using
+
+            ' STEP 3: Prepare one command for inserting
+            Dim insertQuery As String = "
+            INSERT INTO WIPM_Data_tb 
+            (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode) 
+            VALUES (@NMR, @ProductionLotNumber, @EQPDescription, @TrackOutTime, @ReedType, @Qty, @Description, @LotCode)"
+            Dim insertCmd As New SqlCommand(insertQuery, Dbconnection)
+
+            For Each row In deburrList
+                Dim lotNum As String = row("ProductionLotNumber").ToString()
+                Dim trackOut As DateTime = CType(row("TrackOutTime"), DateTime)
+                Dim key = lotNum & "|" & trackOut.ToString("s")
+
+                If existingSet.Contains(key) Then Continue For
+
+                ' STEP 4: Load SLR data for the LotNum
+                Dim slrQuery As String = "SELECT TOP 1 * FROM Component_SLR WHERE LotN = @LotN"
+                Dim slrCmd As New SqlCommand(slrQuery, QA_Dbconnection)
+                slrCmd.Parameters.AddWithValue("@LotN", lotNum)
+
+                Using slrReader = slrCmd.ExecuteReader()
+                    If slrReader.Read() Then
+                        insertCmd.Parameters.Clear()
+                        insertCmd.Parameters.AddWithValue("@NMR", 0)
+                        insertCmd.Parameters.AddWithValue("@ProductionLotNumber", lotNum)
+                        insertCmd.Parameters.AddWithValue("@EQPDescription", row("EQPDescription").ToString())
+                        insertCmd.Parameters.AddWithValue("@TrackOutTime", trackOut)
+                        insertCmd.Parameters.AddWithValue("@ReedType", slrReader("ReedType"))
+                        insertCmd.Parameters.AddWithValue("@Qty", slrReader("Qty"))
+                        insertCmd.Parameters.AddWithValue("@Description", slrReader("Description"))
+                        insertCmd.Parameters.AddWithValue("@LotCode", slrReader("LotCode"))
+                        insertCmd.ExecuteNonQuery()
+                    End If
+                End Using
+            Next
+
+            MsgBox("Optimized insert complete (duplicates skipped).")
+
+        Catch ex As Exception
+            MsgBox("Error: " & ex.Message)
+        Finally
+            ConClose()
+            MES_ConClose()
+            QA_ConClose()
+        End Try
+    End Sub
+
+    Sub Insert_DEBUR_Yesterday()
+        Try
+            MES_ConOpen()
+            QA_ConOpen()
+            ConOpen()
+
+            ' Get yesterday's date
+            Dim yesterday As String = DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd")
+
+            ' STEP 1: Load existing WIPM records for yesterday
+            Dim existingQuery As String = "
+            SELECT ProductionLotNumber, TrackOutTime 
+            FROM WIPM_Data_tb 
+            WHERE CONVERT(date, TrackOutTime) = @DateParam"
+            Dim existingCmd As New SqlCommand(existingQuery, Dbconnection)
+            existingCmd.Parameters.AddWithValue("@DateParam", yesterday)
+
+            Dim existingSet As New HashSet(Of String)
+            Using reader = existingCmd.ExecuteReader()
+                While reader.Read()
+                    Dim key = reader("ProductionLotNumber").ToString() & "|" & Convert.ToDateTime(reader("TrackOutTime")).ToString("s")
+                    existingSet.Add(key)
+                End While
+            End Using
+
+            ' STEP 2: Load all deburr data for yesterday
+            Dim deburrQuery As String = "
+            SELECT ProductionLotNumber, EQPDescription, TrackOutTime 
+            FROM stMES_deburr 
+            WHERE CONVERT(date, TrackOutTime) = @DateParam"
+            Dim deburrCmd As New SqlCommand(deburrQuery, MES_Dbconnection)
+            deburrCmd.Parameters.AddWithValue("@DateParam", yesterday)
+
+            Dim deburrList As New List(Of Dictionary(Of String, Object))
+            Using reader = deburrCmd.ExecuteReader()
+                While reader.Read()
+                    Dim row As New Dictionary(Of String, Object)
+                    row("ProductionLotNumber") = reader("ProductionLotNumber")
+                    row("EQPDescription") = reader("EQPDescription")
+                    row("TrackOutTime") = Convert.ToDateTime(reader("TrackOutTime"))
+                    deburrList.Add(row)
+                End While
+            End Using
+
+            ' STEP 3: Prepare one command for inserting
+            Dim insertQuery As String = "
+            INSERT INTO WIPM_Data_tb 
+            (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode) 
+            VALUES (@NMR, @ProductionLotNumber, @EQPDescription, @TrackOutTime, @ReedType, @Qty, @Description, @LotCode)"
+            Dim insertCmd As New SqlCommand(insertQuery, Dbconnection)
+
+            For Each row In deburrList
+                Dim lotNum As String = row("ProductionLotNumber").ToString()
+                Dim trackOut As DateTime = CType(row("TrackOutTime"), DateTime)
+                Dim key = lotNum & "|" & trackOut.ToString("s")
+
+                If existingSet.Contains(key) Then Continue For
+
+                ' STEP 4: Load SLR data for the LotNum
+                Dim slrQuery As String = "SELECT TOP 1 * FROM Component_SLR WHERE LotN = @LotN"
+                Dim slrCmd As New SqlCommand(slrQuery, QA_Dbconnection)
+                slrCmd.Parameters.AddWithValue("@LotN", lotNum)
+
+                Using slrReader = slrCmd.ExecuteReader()
+                    If slrReader.Read() Then
+                        insertCmd.Parameters.Clear()
+                        insertCmd.Parameters.AddWithValue("@NMR", 0)
+                        insertCmd.Parameters.AddWithValue("@ProductionLotNumber", lotNum)
+                        insertCmd.Parameters.AddWithValue("@EQPDescription", row("EQPDescription").ToString())
+                        insertCmd.Parameters.AddWithValue("@TrackOutTime", trackOut)
+                        insertCmd.Parameters.AddWithValue("@ReedType", slrReader("ReedType"))
+                        insertCmd.Parameters.AddWithValue("@Qty", slrReader("Qty"))
+                        insertCmd.Parameters.AddWithValue("@Description", slrReader("Description"))
+                        insertCmd.Parameters.AddWithValue("@LotCode", slrReader("LotCode"))
+                        insertCmd.ExecuteNonQuery()
+                    End If
+                End Using
+            Next
+
+            MsgBox("Optimized insert complete (duplicates skipped).")
+
+        Catch ex As Exception
+            MsgBox("Error: " & ex.Message)
+        Finally
+            ConClose()
+            MES_ConClose()
+            QA_ConClose()
+        End Try
+    End Sub
+
+    Sub Insert_RAMCO()
+        Try
+            MES_ConOpen()
+            QA_ConOpen()
+            ConOpen()
+
+            Dim today As String = DateTime.Now.ToString("yyyy-MM-dd")
+
+            ' STEP 1: Load existing WIPM records for today
+            Dim existingQuery As String = "
+        SELECT ProductionLotNumber, TrackOutTime 
+        FROM WIPM_Data_tb 
+        WHERE CONVERT(date, TrackOutTime) = @TodayDate"
+            Dim existingCmd As New SqlCommand(existingQuery, Dbconnection)
+            existingCmd.Parameters.AddWithValue("@TodayDate", today)
+
+            Dim existingSet As New HashSet(Of String)
+            Using reader = existingCmd.ExecuteReader()
+                While reader.Read()
+                    Dim key = reader("ProductionLotNumber").ToString() & "|" & Convert.ToDateTime(reader("TrackOutTime")).ToString("s")
+                    existingSet.Add(key)
+                End While
+            End Using
+
+            ' STEP 2: Load all RAMCO data for today
+            Dim RAMCOQuery As String = "
+        SELECT ProductionLotNumber, EQPDescription, TrackOutTime 
+        FROM stMES_wash 
+        WHERE CONVERT(date, TrackOutTime) = @TodayDate"
+            Dim RAMCOCmd As New SqlCommand(RAMCOQuery, MES_Dbconnection)
+            RAMCOCmd.Parameters.AddWithValue("@TodayDate", today)
+
+            Dim RAMCOList As New List(Of Dictionary(Of String, Object))
+            Using reader = RAMCOCmd.ExecuteReader()
+                While reader.Read()
+                    Dim row As New Dictionary(Of String, Object)
+                    row("ProductionLotNumber") = reader("ProductionLotNumber")
+                    row("EQPDescription") = reader("EQPDescription")
+                    row("TrackOutTime") = Convert.ToDateTime(reader("TrackOutTime"))
+                    RAMCOList.Add(row)
+                End While
+            End Using
+
+            ' STEP 3: Prepare one command for inserting
+            Dim insertQuery As String = "
+        INSERT INTO WIPM_Data_tb 
+        (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode) 
+        VALUES (@NMR, @ProductionLotNumber, @EQPDescription, @TrackOutTime, @ReedType, @Qty, @Description, @LotCode)"
+            Dim insertCmd As New SqlCommand(insertQuery, Dbconnection)
+
+            For Each row In RAMCOList
+                Dim lotNum As String = row("ProductionLotNumber").ToString()
+                Dim trackOut As DateTime = CType(row("TrackOutTime"), DateTime)
+                Dim key = lotNum & "|" & trackOut.ToString("s")
+
+                If existingSet.Contains(key) Then Continue For
+
+                ' STEP 4: Load SLR data for the LotNum
+                Dim slrQuery As String = "SELECT TOP 1 * FROM Component_SLR WHERE LotN = @LotN"
+                Dim slrCmd As New SqlCommand(slrQuery, QA_Dbconnection)
+                slrCmd.Parameters.AddWithValue("@LotN", lotNum)
+
+                Using slrReader = slrCmd.ExecuteReader()
+                    If slrReader.Read() Then
+                        insertCmd.Parameters.Clear()
+                        insertCmd.Parameters.AddWithValue("@NMR", 0)
+                        insertCmd.Parameters.AddWithValue("@ProductionLotNumber", lotNum)
+                        insertCmd.Parameters.AddWithValue("@EQPDescription", row("EQPDescription").ToString())
+                        insertCmd.Parameters.AddWithValue("@TrackOutTime", trackOut)
+                        insertCmd.Parameters.AddWithValue("@ReedType", slrReader("ReedType"))
+                        insertCmd.Parameters.AddWithValue("@Qty", slrReader("Qty"))
+                        insertCmd.Parameters.AddWithValue("@Description", slrReader("Description"))
+                        insertCmd.Parameters.AddWithValue("@LotCode", slrReader("LotCode"))
+                        insertCmd.ExecuteNonQuery()
+                    End If
+                End Using
+            Next
+
+            MsgBox("Optimized insert complete (duplicates skipped).")
+
+        Catch ex As Exception
+            MsgBox("Error: " & ex.Message)
+        Finally
+            ConClose()
+            MES_ConClose()
+            QA_ConClose()
+        End Try
+    End Sub
+
+    Sub Insert_RAMCO_Yesterday()
+        Try
+            MES_ConOpen()
+            QA_ConOpen()
+            ConOpen()
+
+            ' Get yesterday's date
+            Dim yesterday As String = DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd")
+
+            ' STEP 1: Load existing WIPM records for yesterday
+            Dim existingQuery As String = "
+        SELECT ProductionLotNumber, TrackOutTime 
+        FROM WIPM_Data_tb 
+        WHERE CONVERT(date, TrackOutTime) = @DateParam"
+            Dim existingCmd As New SqlCommand(existingQuery, Dbconnection)
+            existingCmd.Parameters.AddWithValue("@DateParam", yesterday)
+
+            Dim existingSet As New HashSet(Of String)
+            Using reader = existingCmd.ExecuteReader()
+                While reader.Read()
+                    Dim key = reader("ProductionLotNumber").ToString() & "|" & Convert.ToDateTime(reader("TrackOutTime")).ToString("s")
+                    existingSet.Add(key)
+                End While
+            End Using
+
+            ' STEP 2: Load all RAMCO data for yesterday
+            Dim RAMCOQuery As String = "
+        SELECT ProductionLotNumber, EQPDescription, TrackOutTime 
+        FROM stMES_wash 
+        WHERE CONVERT(date, TrackOutTime) = @DateParam"
+            Dim RAMCOCmd As New SqlCommand(RAMCOQuery, MES_Dbconnection)
+            RAMCOCmd.Parameters.AddWithValue("@DateParam", yesterday)
+
+            Dim RAMCOList As New List(Of Dictionary(Of String, Object))
+            Using reader = RAMCOCmd.ExecuteReader()
+                While reader.Read()
+                    Dim row As New Dictionary(Of String, Object)
+                    row("ProductionLotNumber") = reader("ProductionLotNumber")
+                    row("EQPDescription") = reader("EQPDescription")
+                    row("TrackOutTime") = Convert.ToDateTime(reader("TrackOutTime"))
+                    RAMCOList.Add(row)
+                End While
+            End Using
+
+            ' STEP 3: Prepare one command for inserting
+            Dim insertQuery As String = "
+        INSERT INTO WIPM_Data_tb 
+        (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode) 
+        VALUES (@NMR, @ProductionLotNumber, @EQPDescription, @TrackOutTime, @ReedType, @Qty, @Description, @LotCode)"
+            Dim insertCmd As New SqlCommand(insertQuery, Dbconnection)
+
+            For Each row In RAMCOList
+                Dim lotNum As String = row("ProductionLotNumber").ToString()
+                Dim trackOut As DateTime = CType(row("TrackOutTime"), DateTime)
+                Dim key = lotNum & "|" & trackOut.ToString("s")
+
+                If existingSet.Contains(key) Then Continue For
+
+                ' STEP 4: Load SLR data for the LotNum
+                Dim slrQuery As String = "SELECT TOP 1 * FROM Component_SLR WHERE LotN = @LotN"
+                Dim slrCmd As New SqlCommand(slrQuery, QA_Dbconnection)
+                slrCmd.Parameters.AddWithValue("@LotN", lotNum)
+
+                Using slrReader = slrCmd.ExecuteReader()
+                    If slrReader.Read() Then
+                        insertCmd.Parameters.Clear()
+                        insertCmd.Parameters.AddWithValue("@NMR", 0)
+                        insertCmd.Parameters.AddWithValue("@ProductionLotNumber", lotNum)
+                        insertCmd.Parameters.AddWithValue("@EQPDescription", row("EQPDescription").ToString())
+                        insertCmd.Parameters.AddWithValue("@TrackOutTime", trackOut)
+                        insertCmd.Parameters.AddWithValue("@ReedType", slrReader("ReedType"))
+                        insertCmd.Parameters.AddWithValue("@Qty", slrReader("Qty"))
+                        insertCmd.Parameters.AddWithValue("@Description", slrReader("Description"))
+                        insertCmd.Parameters.AddWithValue("@LotCode", slrReader("LotCode"))
+                        insertCmd.ExecuteNonQuery()
+                    End If
+                End Using
+            Next
+
+            MsgBox("Optimized insert complete (duplicates skipped).")
+
+        Catch ex As Exception
+            MsgBox("Error: " & ex.Message)
+        Finally
+            ConClose()
+            MES_ConClose()
+            QA_ConClose()
+        End Try
+    End Sub
+
+    Sub Insert_ANNEAL()
+        Try
+            MES_ConOpen()
+            QA_ConOpen()
+            ConOpen()
+
+            Dim today As String = DateTime.Now.ToString("yyyy-MM-dd")
+
+            ' STEP 1: Load existing WIPM records for today
+            Dim existingQuery As String = "
+        SELECT ProductionLotNumber, TrackOutTime 
+        FROM WIPM_Data_tb 
+        WHERE CONVERT(date, TrackOutTime) = @TodayDate"
+            Dim existingCmd As New SqlCommand(existingQuery, Dbconnection)
+            existingCmd.Parameters.AddWithValue("@TodayDate", today)
+
+            Dim existingSet As New HashSet(Of String)
+            Using reader = existingCmd.ExecuteReader()
+                While reader.Read()
+                    Dim key = reader("ProductionLotNumber").ToString() & "|" & Convert.ToDateTime(reader("TrackOutTime")).ToString("s")
+                    existingSet.Add(key)
+                End While
+            End Using
+
+            ' STEP 2: Load all ANNEAL data for today
+            Dim ANNEALQuery As String = "
+        SELECT ProductionLotNumber, EQPDescription, TrackOutTime 
+        FROM stMES_anneal 
+        WHERE CONVERT(date, TrackOutTime) = @TodayDate"
+            Dim ANNEALCmd As New SqlCommand(ANNEALQuery, MES_Dbconnection)
+            ANNEALCmd.Parameters.AddWithValue("@TodayDate", today)
+
+            Dim ANNEALList As New List(Of Dictionary(Of String, Object))
+            Using reader = ANNEALCmd.ExecuteReader()
+                While reader.Read()
+                    Dim row As New Dictionary(Of String, Object)
+                    row("ProductionLotNumber") = reader("ProductionLotNumber")
+                    row("EQPDescription") = reader("EQPDescription")
+                    row("TrackOutTime") = Convert.ToDateTime(reader("TrackOutTime"))
+                    ANNEALList.Add(row)
+                End While
+            End Using
+
+            ' STEP 3: Prepare one command for inserting
+            Dim insertQuery As String = "
+        INSERT INTO WIPM_Data_tb 
+        (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode) 
+        VALUES (@NMR, @ProductionLotNumber, @EQPDescription, @TrackOutTime, @ReedType, @Qty, @Description, @LotCode)"
+            Dim insertCmd As New SqlCommand(insertQuery, Dbconnection)
+
+            For Each row In ANNEALList
+                Dim lotNum As String = row("ProductionLotNumber").ToString()
+                Dim trackOut As DateTime = CType(row("TrackOutTime"), DateTime)
+                Dim key = lotNum & "|" & trackOut.ToString("s")
+
+                If existingSet.Contains(key) Then Continue For
+
+                ' STEP 4: Load SLR data for the LotNum
+                Dim slrQuery As String = "SELECT TOP 1 * FROM Component_SLR WHERE LotN = @LotN"
+                Dim slrCmd As New SqlCommand(slrQuery, QA_Dbconnection)
+                slrCmd.Parameters.AddWithValue("@LotN", lotNum)
+
+                Using slrReader = slrCmd.ExecuteReader()
+                    If slrReader.Read() Then
+                        insertCmd.Parameters.Clear()
+                        insertCmd.Parameters.AddWithValue("@NMR", 0)
+                        insertCmd.Parameters.AddWithValue("@ProductionLotNumber", lotNum)
+                        insertCmd.Parameters.AddWithValue("@EQPDescription", row("EQPDescription").ToString())
+                        insertCmd.Parameters.AddWithValue("@TrackOutTime", trackOut)
+                        insertCmd.Parameters.AddWithValue("@ReedType", slrReader("ReedType"))
+                        insertCmd.Parameters.AddWithValue("@Qty", slrReader("Qty"))
+                        insertCmd.Parameters.AddWithValue("@Description", slrReader("Description"))
+                        insertCmd.Parameters.AddWithValue("@LotCode", slrReader("LotCode"))
+                        insertCmd.ExecuteNonQuery()
+                    End If
+                End Using
+            Next
+
+            MsgBox("Optimized insert complete (duplicates skipped).")
+
+        Catch ex As Exception
+            MsgBox("Error: " & ex.Message)
+        Finally
+            ConClose()
+            MES_ConClose()
+            QA_ConClose()
+        End Try
+    End Sub
+
+    Sub Insert_ANNEAL_Yesterday()
+        Try
+            MES_ConOpen()
+            QA_ConOpen()
+            ConOpen()
+
+            ' Get yesterday's date
+            Dim yesterday As String = DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd")
+
+            ' STEP 1: Load existing WIPM records for yesterday
+            Dim existingQuery As String = "
+        SELECT ProductionLotNumber, TrackOutTime 
+        FROM WIPM_Data_tb 
+        WHERE CONVERT(date, TrackOutTime) = @DateParam"
+            Dim existingCmd As New SqlCommand(existingQuery, Dbconnection)
+            existingCmd.Parameters.AddWithValue("@DateParam", yesterday)
+
+            Dim existingSet As New HashSet(Of String)
+            Using reader = existingCmd.ExecuteReader()
+                While reader.Read()
+                    Dim key = reader("ProductionLotNumber").ToString() & "|" & Convert.ToDateTime(reader("TrackOutTime")).ToString("s")
+                    existingSet.Add(key)
+                End While
+            End Using
+
+            ' STEP 2: Load all ANNEAL data for yesterday
+            Dim ANNEALQuery As String = "
+        SELECT ProductionLotNumber, EQPDescription, TrackOutTime 
+        FROM stMES_anneal 
+        WHERE CONVERT(date, TrackOutTime) = @DateParam"
+            Dim ANNEALCmd As New SqlCommand(ANNEALQuery, MES_Dbconnection)
+            ANNEALCmd.Parameters.AddWithValue("@DateParam", yesterday)
+
+            Dim ANNEALList As New List(Of Dictionary(Of String, Object))
+            Using reader = ANNEALCmd.ExecuteReader()
+                While reader.Read()
+                    Dim row As New Dictionary(Of String, Object)
+                    row("ProductionLotNumber") = reader("ProductionLotNumber")
+                    row("EQPDescription") = reader("EQPDescription")
+                    row("TrackOutTime") = Convert.ToDateTime(reader("TrackOutTime"))
+                    ANNEALList.Add(row)
+                End While
+            End Using
+
+            ' STEP 3: Prepare one command for inserting
+            Dim insertQuery As String = "
+        INSERT INTO WIPM_Data_tb 
+        (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode) 
+        VALUES (@NMR, @ProductionLotNumber, @EQPDescription, @TrackOutTime, @ReedType, @Qty, @Description, @LotCode)"
+            Dim insertCmd As New SqlCommand(insertQuery, Dbconnection)
+
+            For Each row In ANNEALList
+                Dim lotNum As String = row("ProductionLotNumber").ToString()
+                Dim trackOut As DateTime = CType(row("TrackOutTime"), DateTime)
+                Dim key = lotNum & "|" & trackOut.ToString("s")
+
+                If existingSet.Contains(key) Then Continue For
+
+                ' STEP 4: Load SLR data for the LotNum
+                Dim slrQuery As String = "SELECT TOP 1 * FROM Component_SLR WHERE LotN = @LotN"
+                Dim slrCmd As New SqlCommand(slrQuery, QA_Dbconnection)
+                slrCmd.Parameters.AddWithValue("@LotN", lotNum)
+
+                Using slrReader = slrCmd.ExecuteReader()
+                    If slrReader.Read() Then
+                        insertCmd.Parameters.Clear()
+                        insertCmd.Parameters.AddWithValue("@NMR", 0)
+                        insertCmd.Parameters.AddWithValue("@ProductionLotNumber", lotNum)
+                        insertCmd.Parameters.AddWithValue("@EQPDescription", row("EQPDescription").ToString())
+                        insertCmd.Parameters.AddWithValue("@TrackOutTime", trackOut)
+                        insertCmd.Parameters.AddWithValue("@ReedType", slrReader("ReedType"))
+                        insertCmd.Parameters.AddWithValue("@Qty", slrReader("Qty"))
+                        insertCmd.Parameters.AddWithValue("@Description", slrReader("Description"))
+                        insertCmd.Parameters.AddWithValue("@LotCode", slrReader("LotCode"))
+                        insertCmd.ExecuteNonQuery()
+                    End If
+                End Using
+            Next
+
+            MsgBox("Optimized insert complete (duplicates skipped).")
+
+        Catch ex As Exception
+            MsgBox("Error: " & ex.Message)
+        Finally
+            ConClose()
+            MES_ConClose()
+            QA_ConClose()
+        End Try
+    End Sub
+
+    Sub Insert_SPUT()
+        Try
+            MES_ConOpen()
+            QA_ConOpen()
+            ConOpen()
+
+            Dim today As String = DateTime.Now.ToString("yyyy-MM-dd")
+
+            ' STEP 1: Load existing WIPM records for today
+            Dim existingQuery As String = "
+        SELECT ProductionLotNumber, TrackOutTime 
+        FROM WIPM_Data_tb 
+        WHERE CONVERT(date, TrackOutTime) = @TodayDate"
+            Dim existingCmd As New SqlCommand(existingQuery, Dbconnection)
+            existingCmd.Parameters.AddWithValue("@TodayDate", today)
+
+            Dim existingSet As New HashSet(Of String)
+            Using reader = existingCmd.ExecuteReader()
+                While reader.Read()
+                    Dim key = reader("ProductionLotNumber").ToString() & "|" & Convert.ToDateTime(reader("TrackOutTime")).ToString("s")
+                    existingSet.Add(key)
+                End While
+            End Using
+
+            ' STEP 2: Load all SPUT data for today
+            Dim SPUTQuery As String = "
+        SELECT ProductionLotNumber, EQPDescription, TrackOutTime 
+        FROM stMES_sput 
+        WHERE CONVERT(date, TrackOutTime) = @TodayDate"
+            Dim SPUTCmd As New SqlCommand(SPUTQuery, MES_Dbconnection)
+            SPUTCmd.Parameters.AddWithValue("@TodayDate", today)
+
+            Dim SPUTList As New List(Of Dictionary(Of String, Object))
+            Using reader = SPUTCmd.ExecuteReader()
+                While reader.Read()
+                    Dim row As New Dictionary(Of String, Object)
+                    row("ProductionLotNumber") = reader("ProductionLotNumber")
+                    row("EQPDescription") = reader("EQPDescription")
+                    row("TrackOutTime") = Convert.ToDateTime(reader("TrackOutTime"))
+                    SPUTList.Add(row)
+                End While
+            End Using
+
+            ' STEP 3: Prepare one command for inserting
+            Dim insertQuery As String = "
+        INSERT INTO WIPM_Data_tb 
+        (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode) 
+        VALUES (@NMR, @ProductionLotNumber, @EQPDescription, @TrackOutTime, @ReedType, @Qty, @Description, @LotCode)"
+            Dim insertCmd As New SqlCommand(insertQuery, Dbconnection)
+
+            For Each row In SPUTList
+                Dim lotNum As String = row("ProductionLotNumber").ToString()
+                Dim trackOut As DateTime = CType(row("TrackOutTime"), DateTime)
+                Dim key = lotNum & "|" & trackOut.ToString("s")
+
+                If existingSet.Contains(key) Then Continue For
+
+                ' STEP 4: Load SLR data for the LotNum
+                Dim slrQuery As String = "SELECT TOP 1 * FROM Component_SLR WHERE LotN = @LotN"
+                Dim slrCmd As New SqlCommand(slrQuery, QA_Dbconnection)
+                slrCmd.Parameters.AddWithValue("@LotN", lotNum)
+
+                Using slrReader = slrCmd.ExecuteReader()
+                    If slrReader.Read() Then
+                        insertCmd.Parameters.Clear()
+                        insertCmd.Parameters.AddWithValue("@NMR", 0)
+                        insertCmd.Parameters.AddWithValue("@ProductionLotNumber", lotNum)
+                        insertCmd.Parameters.AddWithValue("@EQPDescription", row("EQPDescription").ToString())
+                        insertCmd.Parameters.AddWithValue("@TrackOutTime", trackOut)
+                        insertCmd.Parameters.AddWithValue("@ReedType", slrReader("ReedType"))
+                        insertCmd.Parameters.AddWithValue("@Qty", slrReader("Qty"))
+                        insertCmd.Parameters.AddWithValue("@Description", slrReader("Description"))
+                        insertCmd.Parameters.AddWithValue("@LotCode", slrReader("LotCode"))
+                        insertCmd.ExecuteNonQuery()
+                    End If
+                End Using
+            Next
+
+            MsgBox("Optimized insert complete (duplicates skipped).")
+
+        Catch ex As Exception
+            MsgBox("Error: " & ex.Message)
+        Finally
+            ConClose()
+            MES_ConClose()
+            QA_ConClose()
+        End Try
+    End Sub
+
+    Sub Insert_SPUT_Yesterday()
+        Try
+            MES_ConOpen()
+            QA_ConOpen()
+            ConOpen()
+
+            ' Get yesterday's date
+            Dim yesterday As String = DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd")
+
+            ' STEP 1: Load existing WIPM records for yesterday
+            Dim existingQuery As String = "
+        SELECT ProductionLotNumber, TrackOutTime 
+        FROM WIPM_Data_tb 
+        WHERE CONVERT(date, TrackOutTime) = @DateParam"
+            Dim existingCmd As New SqlCommand(existingQuery, Dbconnection)
+            existingCmd.Parameters.AddWithValue("@DateParam", yesterday)
+
+            Dim existingSet As New HashSet(Of String)
+            Using reader = existingCmd.ExecuteReader()
+                While reader.Read()
+                    Dim key = reader("ProductionLotNumber").ToString() & "|" & Convert.ToDateTime(reader("TrackOutTime")).ToString("s")
+                    existingSet.Add(key)
+                End While
+            End Using
+
+            ' STEP 2: Load all SPUT data for yesterday
+            Dim SPUTQuery As String = "
+        SELECT ProductionLotNumber, EQPDescription, TrackOutTime 
+        FROM stMES_sput 
+        WHERE CONVERT(date, TrackOutTime) = @DateParam"
+            Dim SPUTCmd As New SqlCommand(SPUTQuery, MES_Dbconnection)
+            SPUTCmd.Parameters.AddWithValue("@DateParam", yesterday)
+
+            Dim SPUTList As New List(Of Dictionary(Of String, Object))
+            Using reader = SPUTCmd.ExecuteReader()
+                While reader.Read()
+                    Dim row As New Dictionary(Of String, Object)
+                    row("ProductionLotNumber") = reader("ProductionLotNumber")
+                    row("EQPDescription") = reader("EQPDescription")
+                    row("TrackOutTime") = Convert.ToDateTime(reader("TrackOutTime"))
+                    SPUTList.Add(row)
+                End While
+            End Using
+
+            ' STEP 3: Prepare one command for inserting
+            Dim insertQuery As String = "
+        INSERT INTO WIPM_Data_tb 
+        (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode) 
+        VALUES (@NMR, @ProductionLotNumber, @EQPDescription, @TrackOutTime, @ReedType, @Qty, @Description, @LotCode)"
+            Dim insertCmd As New SqlCommand(insertQuery, Dbconnection)
+
+            For Each row In SPUTList
+                Dim lotNum As String = row("ProductionLotNumber").ToString()
+                Dim trackOut As DateTime = CType(row("TrackOutTime"), DateTime)
+                Dim key = lotNum & "|" & trackOut.ToString("s")
+
+                If existingSet.Contains(key) Then Continue For
+
+                ' STEP 4: Load SLR data for the LotNum
+                Dim slrQuery As String = "SELECT TOP 1 * FROM Component_SLR WHERE LotN = @LotN"
+                Dim slrCmd As New SqlCommand(slrQuery, QA_Dbconnection)
+                slrCmd.Parameters.AddWithValue("@LotN", lotNum)
+
+                Using slrReader = slrCmd.ExecuteReader()
+                    If slrReader.Read() Then
+                        insertCmd.Parameters.Clear()
+                        insertCmd.Parameters.AddWithValue("@NMR", 0)
+                        insertCmd.Parameters.AddWithValue("@ProductionLotNumber", lotNum)
+                        insertCmd.Parameters.AddWithValue("@EQPDescription", row("EQPDescription").ToString())
+                        insertCmd.Parameters.AddWithValue("@TrackOutTime", trackOut)
+                        insertCmd.Parameters.AddWithValue("@ReedType", slrReader("ReedType"))
+                        insertCmd.Parameters.AddWithValue("@Qty", slrReader("Qty"))
+                        insertCmd.Parameters.AddWithValue("@Description", slrReader("Description"))
+                        insertCmd.Parameters.AddWithValue("@LotCode", slrReader("LotCode"))
+                        insertCmd.ExecuteNonQuery()
+                    End If
+                End Using
+            Next
+
+            MsgBox("Optimized insert complete (duplicates skipped).")
+
+        Catch ex As Exception
+            MsgBox("Error: " & ex.Message)
+        Finally
+            ConClose()
+            MES_ConClose()
+            QA_ConClose()
+        End Try
+    End Sub
+
+    '============================= < FOR PunchPress_Form > ============================
+
+    Sub Load_PUNCHPRESS()
+        Dim command As New SqlCommand("", Dbconnection)
+        Dim table As New DataTable
+
+        ConOpen()
+
+        If Dbconnection.State = ConnectionState.Open Then
+            command.Connection = Dbconnection
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                                 FROM WIPM_Data_tb WHERE EQPDescription Like '%PUNCHPRESS%' Order by TrackOutTime DESC"
+
+            Dim rdr As SqlDataReader = command.ExecuteReader
+
+            table.Load(rdr)
+
+            PunchPress_Form.DataGridView1.DataSource = table
+
+            ' Bold the header cells
+            For Each column As DataGridViewColumn In PunchPress_Form.DataGridView1.Columns
+                column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 9, FontStyle.Bold)
+                column.HeaderCell.Style.ForeColor = Color.White
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 8)
+            Next
+
+            With PunchPress_Form
+                '.DataGridView1.Columns("NMR").ReadOnly = False
+                .DataGridView1.Columns("NMR").AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+
+                .DataGridView1.Columns("ProductionLotNumber").ReadOnly = True
+                .DataGridView1.Columns("ProductionLotNumber").HeaderText = "Production Lot Number"
+
+                .DataGridView1.Columns("EQPDescription").ReadOnly = True
+                .DataGridView1.Columns("EQPDescription").HeaderText = "EQP Description"
+
+                .DataGridView1.Columns("TrackOutTime").ReadOnly = True
+                .DataGridView1.Columns("TrackOutTime").HeaderText = "TrackOut Time"
+
+                .DataGridView1.Columns("ReedType").ReadOnly = True
+                .DataGridView1.Columns("ReedType").HeaderText = "Reed Type"
+
+                .DataGridView1.Columns("Qty").ReadOnly = True
+
+                .DataGridView1.Columns("Description").ReadOnly = True
+
+                .DataGridView1.Columns("LotCode").ReadOnly = True
+
+                '.DataGridView1.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(116, 185, 255)
+                .DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+                .DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
+
+                .DataGridView1.EnableHeadersVisualStyles = False
+                .DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+            End With
+
+        End If
+
+        ConClose()
+    End Sub
+
+    Sub Load_PUNCHPRESS_byLot()
+        Dim command As New SqlCommand("", Dbconnection)
+        Dim table As New DataTable
+
+        ConOpen()
+
+        If Dbconnection.State = ConnectionState.Open Then
+            command.Connection = Dbconnection
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                       FROM WIPM_Data_tb 
+                       WHERE EQPDescription LIKE '%PUNCHPRESS%' AND ProductionLotNumber = @Search Order by TrackOutTime DESC"
+
+            command.Parameters.AddWithValue("@Search", PunchPress_Form.txtSearch.Text)
+
+            Dim rdr As SqlDataReader = command.ExecuteReader
+
+            table.Load(rdr)
+
+            PunchPress_Form.DataGridView1.DataSource = table
+
+            ' Bold the header cells
+            For Each column As DataGridViewColumn In PunchPress_Form.DataGridView1.Columns
+                column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 9, FontStyle.Bold)
+                column.HeaderCell.Style.ForeColor = Color.White
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 8)
+            Next
+
+            With PunchPress_Form
+                '.DataGridView1.Columns("NMR").ReadOnly = False
+                .DataGridView1.Columns("NMR").AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+
+                .DataGridView1.Columns("ProductionLotNumber").ReadOnly = True
+                .DataGridView1.Columns("ProductionLotNumber").HeaderText = "Production Lot Number"
+
+                .DataGridView1.Columns("EQPDescription").ReadOnly = True
+                .DataGridView1.Columns("EQPDescription").HeaderText = "EQP Description"
+
+                .DataGridView1.Columns("TrackOutTime").ReadOnly = True
+                .DataGridView1.Columns("TrackOutTime").HeaderText = "TrackOut Time"
+
+                .DataGridView1.Columns("ReedType").ReadOnly = True
+                .DataGridView1.Columns("ReedType").HeaderText = "Reed Type"
+
+                .DataGridView1.Columns("Qty").ReadOnly = True
+
+                .DataGridView1.Columns("Description").ReadOnly = True
+
+                .DataGridView1.Columns("LotCode").ReadOnly = True
+
+                '.DataGridView1.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(116, 185, 255)
+                .DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+                .DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
+
+                .DataGridView1.EnableHeadersVisualStyles = False
+                .DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+            End With
+
+        End If
+
+        ConClose()
+    End Sub
+
+    Sub Load_PUNCHPRESS_TextSearch()
+        Try
+            Dim Data As New DataTable
+            Dim adap As New SqlDataAdapter
+            Dim query As String
+
+            If PunchPress_Form.txtSearch.Text = "" Or PunchPress_Form.txtSearch.Text = "Search lot number" Then
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                                 FROM WIPM_Data_tb WHERE EQPDescription Like '%PUNCHPRESS%' Order by TrackOutTime DESC"
+            Else
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                       FROM WIPM_Data_tb 
+                       WHERE EQPDescription LIKE '%PUNCHPRESS%' AND ProductionLotNumber LIKE @Search Order by TrackOutTime DESC"
+
+            End If
+
+            adap = New SqlDataAdapter(query, Dbconnection)
+
+            If PunchPress_Form.txtSearch.Text <> "" Then
+                adap.SelectCommand.Parameters.AddWithValue("@Search", "%" & PunchPress_Form.txtSearch.Text & "%")
+            End If
+
+            ConOpen()
+            adap.Fill(Data)
+            ConClose()
+
+            PunchPress_Form.DataGridView1.DataSource = Data
+
+            ' Bold the header cells
+            For Each column As DataGridViewColumn In PunchPress_Form.DataGridView1.Columns
+                column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 9, FontStyle.Bold)
+                column.HeaderCell.Style.ForeColor = Color.White
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 8)
+            Next
+
+            With PunchPress_Form
+                '.DataGridView1.Columns("NMR").ReadOnly = False
+                .DataGridView1.Columns("NMR").AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+
+                .DataGridView1.Columns("ProductionLotNumber").ReadOnly = True
+                .DataGridView1.Columns("ProductionLotNumber").HeaderText = "Production Lot Number"
+
+                .DataGridView1.Columns("EQPDescription").ReadOnly = True
+                .DataGridView1.Columns("EQPDescription").HeaderText = "EQP Description"
+
+                .DataGridView1.Columns("TrackOutTime").ReadOnly = True
+                .DataGridView1.Columns("TrackOutTime").HeaderText = "TrackOut Time"
+
+                .DataGridView1.Columns("ReedType").ReadOnly = True
+                .DataGridView1.Columns("ReedType").HeaderText = "Reed Type"
+
+                .DataGridView1.Columns("Qty").ReadOnly = True
+
+                .DataGridView1.Columns("Description").ReadOnly = True
+
+                .DataGridView1.Columns("LotCode").ReadOnly = True
+
+                '.DataGridView1.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(116, 185, 255)
+                .DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+                .DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
+
+                .DataGridView1.EnableHeadersVisualStyles = False
+                .DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+            End With
+
+        Catch ex As Exception
+            'MsgBox(ex.Message, vbCritical)
+        Finally
+            ConClose()
+        End Try
+    End Sub
+
+    Sub Save_PUNCHPRESS_Changes()
+        ConOpen()
+
+        For Each row As DataGridViewRow In PunchPress_Form.DataGridView1.Rows
+            ' Skip the new row at the bottom
+            If row.IsNewRow Then Continue For
+
+            ' Get checkbox value
+            Dim isChecked As Boolean = False
+            If Not IsDBNull(row.Cells("NMR").Value) Then
+                isChecked = Convert.ToBoolean(row.Cells("NMR").Value)
+            End If
+
+            ' Get values from the row
+            Dim lotNumber As String = row.Cells("ProductionLotNumber").Value.ToString()
+            Dim trackOutTime As String = row.Cells("TrackOutTime").Value.ToString()
+            Dim eqpDescription As String = row.Cells("EQPDescription").Value.ToString()
+
+            ' Build SQL update with additional conditions
+            Dim updateCmd As New SqlCommand("UPDATE WIPM_Data_tb SET NMR = @NMR WHERE ProductionLotNumber = @LotNumber AND TrackOutTime = @TrackOutTime AND EQPDescription = @EQPDescription", Dbconnection)
+            updateCmd.Parameters.AddWithValue("@NMR", If(isChecked, 1, 0))
+            updateCmd.Parameters.AddWithValue("@LotNumber", lotNumber)
+            updateCmd.Parameters.AddWithValue("@TrackOutTime", trackOutTime)
+            updateCmd.Parameters.AddWithValue("@EQPDescription", eqpDescription)
+
+            ' Execute the update
+            updateCmd.ExecuteNonQuery()
+
+            ' Also update WIPM_Process_tb based on LotNumber
+            Dim updateProcessCmd As New SqlCommand("
+            UPDATE WIPM_Process_tb 
+            SET NMR = @NMR 
+            WHERE Lot_Number = @LotNumber", Dbconnection)
+            updateProcessCmd.Parameters.AddWithValue("@NMR", If(isChecked, 1, 0))
+            updateProcessCmd.Parameters.AddWithValue("@LotNumber", lotNumber)
+            updateProcessCmd.ExecuteNonQuery()
+        Next
+
+        ConClose()
+
+        MessageBox.Show("Changes saved successfully.", "Update", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+
+        If PunchPress_Form.txtSearch.Text = "" Or PunchPress_Form.txtSearch.Text = "Search lot number" Then
+            ' Reload the data after saving changes
+            Load_PUNCHPRESS()
+        Else
+            Load_PUNCHPRESS_TextSearch()
+        End If
+
+    End Sub
+
+
+    '============================= < FOR Vibrator_Form > ============================
+    Sub Load_DEBUR()
+        Dim command As New SqlCommand("", Dbconnection)
+        Dim table As New DataTable
+
+        ConOpen()
+
+        If Dbconnection.State = ConnectionState.Open Then
+            command.Connection = Dbconnection
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                                    FROM WIPM_Data_tb WHERE EQPDescription Like '%DEBUR%' Order by TrackOutTime DESC"
+
+            Dim rdr As SqlDataReader = command.ExecuteReader
+
+            table.Load(rdr)
+
+            Vibrator_Form.DataGridView1.DataSource = table
+
+            ' Bold the header cells
+            For Each column As DataGridViewColumn In Vibrator_Form.DataGridView1.Columns
+                column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 9, FontStyle.Bold)
+                column.HeaderCell.Style.ForeColor = Color.White
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 8)
+            Next
+
+            With Vibrator_Form
+                '.DataGridView1.Columns("NMR").ReadOnly = False
+                .DataGridView1.Columns("NMR").AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+
+                .DataGridView1.Columns("ProductionLotNumber").ReadOnly = True
+                .DataGridView1.Columns("ProductionLotNumber").HeaderText = "Production Lot Number"
+
+                .DataGridView1.Columns("EQPDescription").ReadOnly = True
+                .DataGridView1.Columns("EQPDescription").HeaderText = "EQP Description"
+
+                .DataGridView1.Columns("TrackOutTime").ReadOnly = True
+                .DataGridView1.Columns("TrackOutTime").HeaderText = "TrackOut Time"
+
+                .DataGridView1.Columns("ReedType").ReadOnly = True
+                .DataGridView1.Columns("ReedType").HeaderText = "Reed Type"
+
+                .DataGridView1.Columns("Qty").ReadOnly = True
+
+                .DataGridView1.Columns("Description").ReadOnly = True
+
+                .DataGridView1.Columns("LotCode").ReadOnly = True
+
+                '.DataGridView1.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(116, 185, 255)
+                .DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+                .DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
+
+                .DataGridView1.EnableHeadersVisualStyles = False
+                .DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+            End With
+
+        End If
+
+        ConClose()
+    End Sub
+
+    Sub Load_DEBUR_byLot()
+        Dim command As New SqlCommand("", Dbconnection)
+        Dim table As New DataTable
+
+        ConOpen()
+
+        If Dbconnection.State = ConnectionState.Open Then
+            command.Connection = Dbconnection
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                       FROM WIPM_Data_tb 
+                       WHERE EQPDescription LIKE '%DEBUR%' AND ProductionLotNumber = @Search Order by TrackOutTime DESC"
+
+            command.Parameters.AddWithValue("@Search", Vibrator_Form.txtSearch.Text)
+
+            Dim rdr As SqlDataReader = command.ExecuteReader
+
+            table.Load(rdr)
+
+            Vibrator_Form.DataGridView1.DataSource = table
+
+            ' Bold the header cells
+            For Each column As DataGridViewColumn In Vibrator_Form.DataGridView1.Columns
+                column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 9, FontStyle.Bold)
+                column.HeaderCell.Style.ForeColor = Color.White
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 8)
+            Next
+
+            With Vibrator_Form
+                '.DataGridView1.Columns("NMR").ReadOnly = False
+                .DataGridView1.Columns("NMR").AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+
+                .DataGridView1.Columns("ProductionLotNumber").ReadOnly = True
+                .DataGridView1.Columns("ProductionLotNumber").HeaderText = "Production Lot Number"
+
+                .DataGridView1.Columns("EQPDescription").ReadOnly = True
+                .DataGridView1.Columns("EQPDescription").HeaderText = "EQP Description"
+
+                .DataGridView1.Columns("TrackOutTime").ReadOnly = True
+                .DataGridView1.Columns("TrackOutTime").HeaderText = "TrackOut Time"
+
+                .DataGridView1.Columns("ReedType").ReadOnly = True
+                .DataGridView1.Columns("ReedType").HeaderText = "Reed Type"
+
+                .DataGridView1.Columns("Qty").ReadOnly = True
+
+                .DataGridView1.Columns("Description").ReadOnly = True
+
+                .DataGridView1.Columns("LotCode").ReadOnly = True
+
+                '.DataGridView1.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(116, 185, 255)
+                .DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+                .DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
+
+                .DataGridView1.EnableHeadersVisualStyles = False
+                .DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+            End With
+
+        End If
+
+        ConClose()
+    End Sub
+
+    Sub Load_DEBUR_TextSearch()
+        Try
+            Dim Data As New DataTable
+            Dim adap As New SqlDataAdapter
+            Dim query As String
+
+            If Vibrator_Form.txtSearch.Text = "" Or Vibrator_Form.txtSearch.Text = "Search lot number" Then
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                                 FROM WIPM_Data_tb WHERE EQPDescription Like '%DEBUR%' Order by TrackOutTime DESC"
+            Else
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                       FROM WIPM_Data_tb 
+                       WHERE EQPDescription LIKE '%DEBUR%' AND ProductionLotNumber LIKE @Search Order by TrackOutTime DESC"
+
+            End If
+
+            adap = New SqlDataAdapter(query, Dbconnection)
+
+            If Vibrator_Form.txtSearch.Text <> "" Then
+                adap.SelectCommand.Parameters.AddWithValue("@Search", "%" & Vibrator_Form.txtSearch.Text & "%")
+            End If
+
+            ConOpen()
+            adap.Fill(Data)
+            ConClose()
+
+            Vibrator_Form.DataGridView1.DataSource = Data
+
+            ' Bold the header cells
+            For Each column As DataGridViewColumn In Vibrator_Form.DataGridView1.Columns
+                column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 9, FontStyle.Bold)
+                column.HeaderCell.Style.ForeColor = Color.White
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 8)
+            Next
+
+            With Vibrator_Form
+                '.DataGridView1.Columns("NMR").ReadOnly = False
+                .DataGridView1.Columns("NMR").AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+
+                .DataGridView1.Columns("ProductionLotNumber").ReadOnly = True
+                .DataGridView1.Columns("ProductionLotNumber").HeaderText = "Production Lot Number"
+
+                .DataGridView1.Columns("EQPDescription").ReadOnly = True
+                .DataGridView1.Columns("EQPDescription").HeaderText = "EQP Description"
+
+                .DataGridView1.Columns("TrackOutTime").ReadOnly = True
+                .DataGridView1.Columns("TrackOutTime").HeaderText = "TrackOut Time"
+
+                .DataGridView1.Columns("ReedType").ReadOnly = True
+                .DataGridView1.Columns("ReedType").HeaderText = "Reed Type"
+
+                .DataGridView1.Columns("Qty").ReadOnly = True
+
+                .DataGridView1.Columns("Description").ReadOnly = True
+
+                .DataGridView1.Columns("LotCode").ReadOnly = True
+
+                '.DataGridView1.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(116, 185, 255)
+                .DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+                .DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
+
+                .DataGridView1.EnableHeadersVisualStyles = False
+                .DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+            End With
+
+        Catch ex As Exception
+            'MsgBox(ex.Message, vbCritical)
+        Finally
+            ConClose()
+        End Try
+    End Sub
+
+    Sub Save_DEBUR_Changes()
+        ConOpen()
+
+        For Each row As DataGridViewRow In Vibrator_Form.DataGridView1.Rows
+            ' Skip the new row at the bottom
+            If row.IsNewRow Then Continue For
+
+            ' Get checkbox value
+            Dim isChecked As Boolean = False
+            If Not IsDBNull(row.Cells("NMR").Value) Then
+                isChecked = Convert.ToBoolean(row.Cells("NMR").Value)
+            End If
+
+            ' Get values from the row
+            Dim lotNumber As String = row.Cells("ProductionLotNumber").Value.ToString()
+            Dim trackOutTime As String = row.Cells("TrackOutTime").Value.ToString()
+            Dim eqpDescription As String = row.Cells("EQPDescription").Value.ToString()
+
+            ' Build SQL update with additional conditions
+            Dim updateCmd As New SqlCommand("UPDATE WIPM_Data_tb SET NMR = @NMR WHERE ProductionLotNumber = @LotNumber AND TrackOutTime = @TrackOutTime AND EQPDescription = @EQPDescription", Dbconnection)
+            updateCmd.Parameters.AddWithValue("@NMR", If(isChecked, 1, 0))
+            updateCmd.Parameters.AddWithValue("@LotNumber", lotNumber)
+            updateCmd.Parameters.AddWithValue("@TrackOutTime", trackOutTime)
+            updateCmd.Parameters.AddWithValue("@EQPDescription", eqpDescription)
+
+            ' Execute the update
+            updateCmd.ExecuteNonQuery()
+
+            ' Also update WIPM_Process_tb based on LotNumber
+            Dim updateProcessCmd As New SqlCommand("
+            UPDATE WIPM_Process_tb 
+            SET NMR = @NMR 
+            WHERE Lot_Number = @LotNumber", Dbconnection)
+            updateProcessCmd.Parameters.AddWithValue("@NMR", If(isChecked, 1, 0))
+            updateProcessCmd.Parameters.AddWithValue("@LotNumber", lotNumber)
+            updateProcessCmd.ExecuteNonQuery()
+        Next
+
+        ConClose()
+
+        MessageBox.Show("Changes saved successfully.", "Update", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+        If Vibrator_Form.txtSearch.Text = "" Or Vibrator_Form.txtSearch.Text = "Search lot number" Then
+            ' Reload the data after saving changes
+            Load_DEBUR()
+        Else
+            Load_DEBUR_TextSearch()
+        End If
+
+    End Sub
+
+
+    '============================= < FOR LoadWash_Form > ============================
+    Sub Load_RAMCO()
+        Dim command As New SqlCommand("", Dbconnection)
+        Dim table As New DataTable
+
+        ConOpen()
+
+        If Dbconnection.State = ConnectionState.Open Then
+            command.Connection = Dbconnection
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                                    FROM WIPM_Data_tb WHERE EQPDescription Like '%RAMCO%' Order by TrackOutTime DESC"
+
+            Dim rdr As SqlDataReader = command.ExecuteReader
+
+            table.Load(rdr)
+
+            LoadWash_Form.DataGridView1.DataSource = table
+
+            ' Bold the header cells
+            For Each column As DataGridViewColumn In LoadWash_Form.DataGridView1.Columns
+                column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 9, FontStyle.Bold)
+                column.HeaderCell.Style.ForeColor = Color.White
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 8)
+            Next
+
+            With LoadWash_Form
+                '.DataGridView1.Columns("NMR").ReadOnly = False
+                .DataGridView1.Columns("NMR").AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+
+                .DataGridView1.Columns("ProductionLotNumber").ReadOnly = True
+                .DataGridView1.Columns("ProductionLotNumber").HeaderText = "Production Lot Number"
+
+                .DataGridView1.Columns("EQPDescription").ReadOnly = True
+                .DataGridView1.Columns("EQPDescription").HeaderText = "EQP Description"
+
+                .DataGridView1.Columns("TrackOutTime").ReadOnly = True
+                .DataGridView1.Columns("TrackOutTime").HeaderText = "TrackOut Time"
+
+                .DataGridView1.Columns("ReedType").ReadOnly = True
+                .DataGridView1.Columns("ReedType").HeaderText = "Reed Type"
+
+                .DataGridView1.Columns("Qty").ReadOnly = True
+
+                .DataGridView1.Columns("Description").ReadOnly = True
+
+                .DataGridView1.Columns("LotCode").ReadOnly = True
+
+                '.DataGridView1.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(116, 185, 255)
+                .DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+                .DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
+
+                .DataGridView1.EnableHeadersVisualStyles = False
+                .DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+
+            End With
+
+        End If
+
+        ConClose()
+    End Sub
+
+    Sub Load_RAMCO_byLot()
+        Dim command As New SqlCommand("", Dbconnection)
+        Dim table As New DataTable
+
+        ConOpen()
+
+        If Dbconnection.State = ConnectionState.Open Then
+            command.Connection = Dbconnection
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                       FROM WIPM_Data_tb 
+                       WHERE EQPDescription LIKE '%RAMCO%' AND ProductionLotNumber = @Search Order by TrackOutTime DESC"
+
+            command.Parameters.AddWithValue("@Search", LoadWash_Form.txtSearch.Text)
+
+            Dim rdr As SqlDataReader = command.ExecuteReader
+
+            table.Load(rdr)
+
+            LoadWash_Form.DataGridView1.DataSource = table
+
+            ' Bold the header cells
+            For Each column As DataGridViewColumn In LoadWash_Form.DataGridView1.Columns
+                column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 9, FontStyle.Bold)
+                column.HeaderCell.Style.ForeColor = Color.White
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 8)
+            Next
+
+            With LoadWash_Form
+                '.DataGridView1.Columns("NMR").ReadOnly = False
+                .DataGridView1.Columns("NMR").AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+
+                .DataGridView1.Columns("ProductionLotNumber").ReadOnly = True
+                .DataGridView1.Columns("ProductionLotNumber").HeaderText = "Production Lot Number"
+
+                .DataGridView1.Columns("EQPDescription").ReadOnly = True
+                .DataGridView1.Columns("EQPDescription").HeaderText = "EQP Description"
+
+                .DataGridView1.Columns("TrackOutTime").ReadOnly = True
+                .DataGridView1.Columns("TrackOutTime").HeaderText = "TrackOut Time"
+
+                .DataGridView1.Columns("ReedType").ReadOnly = True
+                .DataGridView1.Columns("ReedType").HeaderText = "Reed Type"
+
+                .DataGridView1.Columns("Qty").ReadOnly = True
+
+                .DataGridView1.Columns("Description").ReadOnly = True
+
+                .DataGridView1.Columns("LotCode").ReadOnly = True
+
+                '.DataGridView1.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(116, 185, 255)
+                .DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+                .DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
+
+                .DataGridView1.EnableHeadersVisualStyles = False
+                .DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+            End With
+
+        End If
+
+        ConClose()
+    End Sub
+
+    Sub Load_RAMCO_TextSearch()
+        Try
+            Dim Data As New DataTable
+            Dim adap As New SqlDataAdapter
+            Dim query As String
+
+            If LoadWash_Form.txtSearch.Text = "" Or LoadWash_Form.txtSearch.Text = "Search lot number" Then
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                                 FROM WIPM_Data_tb WHERE EQPDescription Like '%RAMCO%' Order by TrackOutTime DESC"
+            Else
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                       FROM WIPM_Data_tb 
+                       WHERE EQPDescription LIKE '%RAMCO%' AND ProductionLotNumber LIKE @Search Order by TrackOutTime DESC"
+
+            End If
+
+            adap = New SqlDataAdapter(query, Dbconnection)
+
+            If LoadWash_Form.txtSearch.Text <> "" Then
+                adap.SelectCommand.Parameters.AddWithValue("@Search", "%" & LoadWash_Form.txtSearch.Text & "%")
+            End If
+
+            ConOpen()
+            adap.Fill(Data)
+            ConClose()
+
+            LoadWash_Form.DataGridView1.DataSource = Data
+
+            ' Bold the header cells
+            For Each column As DataGridViewColumn In LoadWash_Form.DataGridView1.Columns
+                column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 9, FontStyle.Bold)
+                column.HeaderCell.Style.ForeColor = Color.White
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 8)
+            Next
+
+            With LoadWash_Form
+                '.DataGridView1.Columns("NMR").ReadOnly = False
+                .DataGridView1.Columns("NMR").AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+
+                .DataGridView1.Columns("ProductionLotNumber").ReadOnly = True
+                .DataGridView1.Columns("ProductionLotNumber").HeaderText = "Production Lot Number"
+
+                .DataGridView1.Columns("EQPDescription").ReadOnly = True
+                .DataGridView1.Columns("EQPDescription").HeaderText = "EQP Description"
+
+                .DataGridView1.Columns("TrackOutTime").ReadOnly = True
+                .DataGridView1.Columns("TrackOutTime").HeaderText = "TrackOut Time"
+
+                .DataGridView1.Columns("ReedType").ReadOnly = True
+                .DataGridView1.Columns("ReedType").HeaderText = "Reed Type"
+
+                .DataGridView1.Columns("Qty").ReadOnly = True
+
+                .DataGridView1.Columns("Description").ReadOnly = True
+
+                .DataGridView1.Columns("LotCode").ReadOnly = True
+
+                '.DataGridView1.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(116, 185, 255)
+                .DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+                .DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
+
+                .DataGridView1.EnableHeadersVisualStyles = False
+                .DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+            End With
+
+        Catch ex As Exception
+            'MsgBox(ex.Message, vbCritical)
+        Finally
+            ConClose()
+        End Try
+    End Sub
+
+    Sub Save_RAMCO_Changes()
+        ConOpen()
+
+        For Each row As DataGridViewRow In LoadWash_Form.DataGridView1.Rows
+            ' Skip the new row at the bottom
+            If row.IsNewRow Then Continue For
+
+            ' Get checkbox value
+            Dim isChecked As Boolean = False
+            If Not IsDBNull(row.Cells("NMR").Value) Then
+                isChecked = Convert.ToBoolean(row.Cells("NMR").Value)
+            End If
+
+            ' Get values from the row
+            Dim lotNumber As String = row.Cells("ProductionLotNumber").Value.ToString()
+            Dim trackOutTime As String = row.Cells("TrackOutTime").Value.ToString()
+            Dim eqpDescription As String = row.Cells("EQPDescription").Value.ToString()
+
+            ' Build SQL update with additional conditions
+            Dim updateCmd As New SqlCommand("UPDATE WIPM_Data_tb SET NMR = @NMR WHERE ProductionLotNumber = @LotNumber AND TrackOutTime = @TrackOutTime AND EQPDescription = @EQPDescription", Dbconnection)
+            updateCmd.Parameters.AddWithValue("@NMR", If(isChecked, 1, 0))
+            updateCmd.Parameters.AddWithValue("@LotNumber", lotNumber)
+            updateCmd.Parameters.AddWithValue("@TrackOutTime", trackOutTime)
+            updateCmd.Parameters.AddWithValue("@EQPDescription", eqpDescription)
+
+            ' Execute the update
+            updateCmd.ExecuteNonQuery()
+
+            ' Also update WIPM_Process_tb based on LotNumber
+            Dim updateProcessCmd As New SqlCommand("
+            UPDATE WIPM_Process_tb 
+            SET NMR = @NMR 
+            WHERE Lot_Number = @LotNumber", Dbconnection)
+            updateProcessCmd.Parameters.AddWithValue("@NMR", If(isChecked, 1, 0))
+            updateProcessCmd.Parameters.AddWithValue("@LotNumber", lotNumber)
+            updateProcessCmd.ExecuteNonQuery()
+        Next
+
+        ConClose()
+
+        MessageBox.Show("Changes saved successfully.", "Update", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+        If LoadWash_Form.txtSearch.Text = "" Or LoadWash_Form.txtSearch.Text = "Search lot number" Then
+            ' Reload the data after saving changes
+            Load_RAMCO()
+        Else
+            Load_RAMCO_TextSearch()
+        End If
+
+    End Sub
+
+
+    '============================= < FOR Anneal_Form > ============================
+    Sub Load_ANNEAL()
+        Dim command As New SqlCommand("", Dbconnection)
+        Dim table As New DataTable
+
+        ConOpen()
+
+        If Dbconnection.State = ConnectionState.Open Then
+            command.Connection = Dbconnection
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                                    FROM WIPM_Data_tb WHERE EQPDescription Like '%ANNEAL%' Order by TrackOutTime DESC"
+
+            Dim rdr As SqlDataReader = command.ExecuteReader
+
+            table.Load(rdr)
+
+            Anneal_Form.DataGridView1.DataSource = table
+
+            ' Bold the header cells
+            For Each column As DataGridViewColumn In Anneal_Form.DataGridView1.Columns
+                column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 9, FontStyle.Bold)
+                column.HeaderCell.Style.ForeColor = Color.White
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 8)
+            Next
+
+            With Anneal_Form
+                '.DataGridView1.Columns("NMR").ReadOnly = False
+                .DataGridView1.Columns("NMR").AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+
+                .DataGridView1.Columns("ProductionLotNumber").ReadOnly = True
+                .DataGridView1.Columns("ProductionLotNumber").HeaderText = "Production Lot Number"
+
+                .DataGridView1.Columns("EQPDescription").ReadOnly = True
+                .DataGridView1.Columns("EQPDescription").HeaderText = "EQP Description"
+
+                .DataGridView1.Columns("TrackOutTime").ReadOnly = True
+                .DataGridView1.Columns("TrackOutTime").HeaderText = "TrackOut Time"
+
+                .DataGridView1.Columns("ReedType").ReadOnly = True
+                .DataGridView1.Columns("ReedType").HeaderText = "Reed Type"
+
+                .DataGridView1.Columns("Qty").ReadOnly = True
+
+                .DataGridView1.Columns("Description").ReadOnly = True
+
+                .DataGridView1.Columns("LotCode").ReadOnly = True
+
+                '.DataGridView1.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(116, 185, 255)
+                .DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+                .DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
+
+                .DataGridView1.EnableHeadersVisualStyles = False
+                .DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+            End With
+
+        End If
+
+        ConClose()
+    End Sub
+
+    Sub Load_ANNEAL_byLot()
+        Dim command As New SqlCommand("", Dbconnection)
+        Dim table As New DataTable
+
+        ConOpen()
+
+        If Dbconnection.State = ConnectionState.Open Then
+            command.Connection = Dbconnection
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                       FROM WIPM_Data_tb 
+                       WHERE EQPDescription LIKE '%ANNEAL%' AND ProductionLotNumber = @Search Order by TrackOutTime DESC"
+
+            command.Parameters.AddWithValue("@Search", Anneal_Form.txtSearch.Text)
+
+            Dim rdr As SqlDataReader = command.ExecuteReader
+
+            table.Load(rdr)
+
+            Anneal_Form.DataGridView1.DataSource = table
+
+            ' Bold the header cells
+            For Each column As DataGridViewColumn In Anneal_Form.DataGridView1.Columns
+                column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 9, FontStyle.Bold)
+                column.HeaderCell.Style.ForeColor = Color.White
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 8)
+            Next
+
+            With Anneal_Form
+                '.DataGridView1.Columns("NMR").ReadOnly = False
+                .DataGridView1.Columns("NMR").AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+
+                .DataGridView1.Columns("ProductionLotNumber").ReadOnly = True
+                .DataGridView1.Columns("ProductionLotNumber").HeaderText = "Production Lot Number"
+
+                .DataGridView1.Columns("EQPDescription").ReadOnly = True
+                .DataGridView1.Columns("EQPDescription").HeaderText = "EQP Description"
+
+                .DataGridView1.Columns("TrackOutTime").ReadOnly = True
+                .DataGridView1.Columns("TrackOutTime").HeaderText = "TrackOut Time"
+
+                .DataGridView1.Columns("ReedType").ReadOnly = True
+                .DataGridView1.Columns("ReedType").HeaderText = "Reed Type"
+
+                .DataGridView1.Columns("Qty").ReadOnly = True
+
+                .DataGridView1.Columns("Description").ReadOnly = True
+
+                .DataGridView1.Columns("LotCode").ReadOnly = True
+
+                '.DataGridView1.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(116, 185, 255)
+                .DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+                .DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
+
+                .DataGridView1.EnableHeadersVisualStyles = False
+                .DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+            End With
+
+        End If
+
+        ConClose()
+    End Sub
+
+    Sub Load_ANNEAL_TextSearch()
+        Try
+            Dim Data As New DataTable
+            Dim adap As New SqlDataAdapter
+            Dim query As String
+
+            If Anneal_Form.txtSearch.Text = "" Or Anneal_Form.txtSearch.Text = "Search lot number" Then
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                                 FROM WIPM_Data_tb WHERE EQPDescription Like '%ANNEAL%' Order by TrackOutTime DESC"
+            Else
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                       FROM WIPM_Data_tb 
+                       WHERE EQPDescription LIKE '%ANNEAL%' AND ProductionLotNumber LIKE @Search Order by TrackOutTime DESC"
+
+            End If
+
+            adap = New SqlDataAdapter(query, Dbconnection)
+
+            If Anneal_Form.txtSearch.Text <> "" Then
+                adap.SelectCommand.Parameters.AddWithValue("@Search", "%" & Anneal_Form.txtSearch.Text & "%")
+            End If
+
+            ConOpen()
+            adap.Fill(Data)
+            ConClose()
+
+            Anneal_Form.DataGridView1.DataSource = Data
+
+            ' Bold the header cells
+            For Each column As DataGridViewColumn In Anneal_Form.DataGridView1.Columns
+                column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 9, FontStyle.Bold)
+                column.HeaderCell.Style.ForeColor = Color.White
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 8)
+            Next
+
+            With Anneal_Form
+                '.DataGridView1.Columns("NMR").ReadOnly = False
+                .DataGridView1.Columns("NMR").AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+
+                .DataGridView1.Columns("ProductionLotNumber").ReadOnly = True
+                .DataGridView1.Columns("ProductionLotNumber").HeaderText = "Production Lot Number"
+
+                .DataGridView1.Columns("EQPDescription").ReadOnly = True
+                .DataGridView1.Columns("EQPDescription").HeaderText = "EQP Description"
+
+                .DataGridView1.Columns("TrackOutTime").ReadOnly = True
+                .DataGridView1.Columns("TrackOutTime").HeaderText = "TrackOut Time"
+
+                .DataGridView1.Columns("ReedType").ReadOnly = True
+                .DataGridView1.Columns("ReedType").HeaderText = "Reed Type"
+
+                .DataGridView1.Columns("Qty").ReadOnly = True
+
+                .DataGridView1.Columns("Description").ReadOnly = True
+
+                .DataGridView1.Columns("LotCode").ReadOnly = True
+
+                '.DataGridView1.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(116, 185, 255)
+                .DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+                .DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
+
+                .DataGridView1.EnableHeadersVisualStyles = False
+                .DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+            End With
+
+        Catch ex As Exception
+            'MsgBox(ex.Message, vbCritical)
+        Finally
+            ConClose()
+        End Try
+    End Sub
+
+    Sub Save_ANNEAL_Changes()
+        ConOpen()
+
+        For Each row As DataGridViewRow In Anneal_Form.DataGridView1.Rows
+            ' Skip the new row at the bottom
+            If row.IsNewRow Then Continue For
+
+            ' Get checkbox value
+            Dim isChecked As Boolean = False
+            If Not IsDBNull(row.Cells("NMR").Value) Then
+                isChecked = Convert.ToBoolean(row.Cells("NMR").Value)
+            End If
+
+            ' Get values from the row
+            Dim lotNumber As String = row.Cells("ProductionLotNumber").Value.ToString()
+            Dim trackOutTime As String = row.Cells("TrackOutTime").Value.ToString()
+            Dim eqpDescription As String = row.Cells("EQPDescription").Value.ToString()
+
+            ' Build SQL update with additional conditions
+            Dim updateCmd As New SqlCommand("UPDATE WIPM_Data_tb SET NMR = @NMR WHERE ProductionLotNumber = @LotNumber AND TrackOutTime = @TrackOutTime AND EQPDescription = @EQPDescription", Dbconnection)
+            updateCmd.Parameters.AddWithValue("@NMR", If(isChecked, 1, 0))
+            updateCmd.Parameters.AddWithValue("@LotNumber", lotNumber)
+            updateCmd.Parameters.AddWithValue("@TrackOutTime", trackOutTime)
+            updateCmd.Parameters.AddWithValue("@EQPDescription", eqpDescription)
+
+            ' Execute the update
+            updateCmd.ExecuteNonQuery()
+
+            ' Also update WIPM_Process_tb based on LotNumber
+            Dim updateProcessCmd As New SqlCommand("
+            UPDATE WIPM_Process_tb 
+            SET NMR = @NMR 
+            WHERE Lot_Number = @LotNumber", Dbconnection)
+            updateProcessCmd.Parameters.AddWithValue("@NMR", If(isChecked, 1, 0))
+            updateProcessCmd.Parameters.AddWithValue("@LotNumber", lotNumber)
+            updateProcessCmd.ExecuteNonQuery()
+        Next
+
+        ConClose()
+
+        MessageBox.Show("Changes saved successfully.", "Update", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+        If Anneal_Form.txtSearch.Text = "" Or Anneal_Form.txtSearch.Text = "Search lot number" Then
+            ' Reload the data after saving changes
+            Load_ANNEAL()
+        Else
+            Load_ANNEAL_TextSearch()
+        End If
+
+    End Sub
+
+
+    '============================= < FOR Sput_Form > ============================
+    Sub Load_SPUT()
+        Dim command As New SqlCommand("", Dbconnection)
+        Dim table As New DataTable
+
+        ConOpen()
+
+        If Dbconnection.State = ConnectionState.Open Then
+            command.Connection = Dbconnection
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                                    FROM WIPM_Data_tb WHERE EQPDescription Like '%SPUT%' Order by TrackOutTime DESC"
+
+            Dim rdr As SqlDataReader = command.ExecuteReader
+
+            table.Load(rdr)
+
+            Sput_Form.DataGridView1.DataSource = table
+
+            ' Bold the header cells
+            For Each column As DataGridViewColumn In Sput_Form.DataGridView1.Columns
+                column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 9, FontStyle.Bold)
+                column.HeaderCell.Style.ForeColor = Color.White
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 8)
+            Next
+
+            With Sput_Form
+                '.DataGridView1.Columns("NMR").ReadOnly = False
+                .DataGridView1.Columns("NMR").AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+
+                .DataGridView1.Columns("ProductionLotNumber").ReadOnly = True
+                .DataGridView1.Columns("ProductionLotNumber").HeaderText = "Production Lot Number"
+
+                .DataGridView1.Columns("EQPDescription").ReadOnly = True
+                .DataGridView1.Columns("EQPDescription").HeaderText = "EQP Description"
+
+                .DataGridView1.Columns("TrackOutTime").ReadOnly = True
+                .DataGridView1.Columns("TrackOutTime").HeaderText = "TrackOut Time"
+
+                .DataGridView1.Columns("ReedType").ReadOnly = True
+                .DataGridView1.Columns("ReedType").HeaderText = "Reed Type"
+
+                .DataGridView1.Columns("Qty").ReadOnly = True
+
+                .DataGridView1.Columns("Description").ReadOnly = True
+
+                .DataGridView1.Columns("LotCode").ReadOnly = True
+
+                '.DataGridView1.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(116, 185, 255)
+                .DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+                .DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
+
+                .DataGridView1.EnableHeadersVisualStyles = False
+                .DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+            End With
+
+        End If
+
+        ConClose()
+    End Sub
+
+    Sub Load_SPUT_byLot()
+        Dim command As New SqlCommand("", Dbconnection)
+        Dim table As New DataTable
+
+        ConOpen()
+
+        If Dbconnection.State = ConnectionState.Open Then
+            command.Connection = Dbconnection
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                       FROM WIPM_Data_tb 
+                       WHERE EQPDescription LIKE '%SPUT%' AND ProductionLotNumber = @Search Order by TrackOutTime DESC"
+
+            command.Parameters.AddWithValue("@Search", Sput_Form.txtSearch.Text)
+
+            Dim rdr As SqlDataReader = command.ExecuteReader
+
+            table.Load(rdr)
+
+            Sput_Form.DataGridView1.DataSource = table
+
+            ' Bold the header cells
+            For Each column As DataGridViewColumn In Sput_Form.DataGridView1.Columns
+                column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 9, FontStyle.Bold)
+                column.HeaderCell.Style.ForeColor = Color.White
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 8)
+            Next
+
+            With Sput_Form
+                '.DataGridView1.Columns("NMR").ReadOnly = False
+                .DataGridView1.Columns("NMR").AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+
+                .DataGridView1.Columns("ProductionLotNumber").ReadOnly = True
+                .DataGridView1.Columns("ProductionLotNumber").HeaderText = "Production Lot Number"
+
+                .DataGridView1.Columns("EQPDescription").ReadOnly = True
+                .DataGridView1.Columns("EQPDescription").HeaderText = "EQP Description"
+
+                .DataGridView1.Columns("TrackOutTime").ReadOnly = True
+                .DataGridView1.Columns("TrackOutTime").HeaderText = "TrackOut Time"
+
+                .DataGridView1.Columns("ReedType").ReadOnly = True
+                .DataGridView1.Columns("ReedType").HeaderText = "Reed Type"
+
+                .DataGridView1.Columns("Qty").ReadOnly = True
+
+                .DataGridView1.Columns("Description").ReadOnly = True
+
+                .DataGridView1.Columns("LotCode").ReadOnly = True
+
+                '.DataGridView1.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(116, 185, 255)
+                .DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+                .DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
+
+                .DataGridView1.EnableHeadersVisualStyles = False
+                .DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+            End With
+
+        End If
+
+        ConClose()
+    End Sub
+
+    Sub Load_SPUT_TextSearch()
+        Try
+            Dim Data As New DataTable
+            Dim adap As New SqlDataAdapter
+            Dim query As String
+
+            If Sput_Form.txtSearch.Text = "" Or Sput_Form.txtSearch.Text = "Search lot number" Then
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                                 FROM WIPM_Data_tb WHERE EQPDescription Like '%SPUT%' Order by TrackOutTime DESC"
+            Else
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                       FROM WIPM_Data_tb 
+                       WHERE EQPDescription LIKE '%SPUT%' AND ProductionLotNumber LIKE @Search Order by TrackOutTime DESC"
+
+            End If
+
+            adap = New SqlDataAdapter(query, Dbconnection)
+
+            If Sput_Form.txtSearch.Text <> "" Then
+                adap.SelectCommand.Parameters.AddWithValue("@Search", "%" & Sput_Form.txtSearch.Text & "%")
+            End If
+
+            ConOpen()
+            adap.Fill(Data)
+            ConClose()
+
+            Sput_Form.DataGridView1.DataSource = Data
+
+            ' Bold the header cells
+            For Each column As DataGridViewColumn In Sput_Form.DataGridView1.Columns
+                column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 9, FontStyle.Bold)
+                column.HeaderCell.Style.ForeColor = Color.White
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 8)
+            Next
+
+            With Sput_Form
+                '.DataGridView1.Columns("NMR").ReadOnly = False
+                .DataGridView1.Columns("NMR").AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+
+                .DataGridView1.Columns("ProductionLotNumber").ReadOnly = True
+                .DataGridView1.Columns("ProductionLotNumber").HeaderText = "Production Lot Number"
+
+                .DataGridView1.Columns("EQPDescription").ReadOnly = True
+                .DataGridView1.Columns("EQPDescription").HeaderText = "EQP Description"
+
+                .DataGridView1.Columns("TrackOutTime").ReadOnly = True
+                .DataGridView1.Columns("TrackOutTime").HeaderText = "TrackOut Time"
+
+                .DataGridView1.Columns("ReedType").ReadOnly = True
+                .DataGridView1.Columns("ReedType").HeaderText = "Reed Type"
+
+                .DataGridView1.Columns("Qty").ReadOnly = True
+
+                .DataGridView1.Columns("Description").ReadOnly = True
+
+                .DataGridView1.Columns("LotCode").ReadOnly = True
+
+                '.DataGridView1.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(116, 185, 255)
+                .DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+                .DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
+
+                .DataGridView1.EnableHeadersVisualStyles = False
+                .DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+            End With
+
+        Catch ex As Exception
+            'MsgBox(ex.Message, vbCritical)
+        Finally
+            ConClose()
+        End Try
+    End Sub
+
+    Sub Save_SPUT_Changes()
+        ConOpen()
+
+        For Each row As DataGridViewRow In Sput_Form.DataGridView1.Rows
+            ' Skip the new row at the bottom
+            If row.IsNewRow Then Continue For
+
+            ' Get checkbox value
+            Dim isChecked As Boolean = False
+            If Not IsDBNull(row.Cells("NMR").Value) Then
+                isChecked = Convert.ToBoolean(row.Cells("NMR").Value)
+            End If
+
+            ' Get values from the row
+            Dim lotNumber As String = row.Cells("ProductionLotNumber").Value.ToString()
+            Dim trackOutTime As String = row.Cells("TrackOutTime").Value.ToString()
+            Dim eqpDescription As String = row.Cells("EQPDescription").Value.ToString()
+
+            ' Build SQL update with additional conditions
+            Dim updateCmd As New SqlCommand("UPDATE WIPM_Data_tb SET NMR = @NMR WHERE ProductionLotNumber = @LotNumber AND TrackOutTime = @TrackOutTime AND EQPDescription = @EQPDescription", Dbconnection)
+            updateCmd.Parameters.AddWithValue("@NMR", If(isChecked, 1, 0))
+            updateCmd.Parameters.AddWithValue("@LotNumber", lotNumber)
+            updateCmd.Parameters.AddWithValue("@TrackOutTime", trackOutTime)
+            updateCmd.Parameters.AddWithValue("@EQPDescription", eqpDescription)
+
+            ' Execute the update
+            updateCmd.ExecuteNonQuery()
+
+            ' Also update WIPM_Process_tb based on LotNumber
+            Dim updateProcessCmd As New SqlCommand("
+            UPDATE WIPM_Process_tb 
+            SET NMR = @NMR 
+            WHERE Lot_Number = @LotNumber", Dbconnection)
+            updateProcessCmd.Parameters.AddWithValue("@NMR", If(isChecked, 1, 0))
+            updateProcessCmd.Parameters.AddWithValue("@LotNumber", lotNumber)
+            updateProcessCmd.ExecuteNonQuery()
+        Next
+
+        ConClose()
+
+        MessageBox.Show("Changes saved successfully.", "Update", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+        If Sput_Form.txtSearch.Text = "" Or Sput_Form.txtSearch.Text = "Search lot number" Then
+            ' Reload the data after saving changes
+            Load_SPUT()
+        Else
+            Load_SPUT_TextSearch()
+        End If
+
+    End Sub
+
+    '============================= < FOR INSERT LOT NUMBER > ============================
+
+    Sub ProcessWIPMData()
+        Try
+            ConOpen()
+
+            ' STEP 1: Load all existing Lot_Numbers
+            Dim existingLots As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
+            Using lotCmd As New SqlCommand("SELECT Lot_Number FROM WIPM_Process_tb", Dbconnection)
+                Using lotReader = lotCmd.ExecuteReader()
+                    While lotReader.Read()
+                        existingLots.Add(lotReader("Lot_Number").ToString())
+                    End While
+                End Using
+            End Using
+
+            ' STEP 2: Read data from WIPM_Data_tb
+            Dim dataList As New List(Of Dictionary(Of String, Object))
+            Using selectCmd As New SqlCommand("SELECT ProductionLotNumber, EQPDescription, ReedType, Qty FROM WIPM_Data_tb", Dbconnection)
+                Using reader = selectCmd.ExecuteReader()
+                    While reader.Read()
+                        Dim row As New Dictionary(Of String, Object) From {
+                        {"LotNumber", reader("ProductionLotNumber").ToString()},
+                        {"EQPDescription", reader("EQPDescription").ToString().ToUpper()},
+                        {"ReedType", reader("ReedType").ToString()},
+                        {"Qty", Convert.ToInt32(reader("Qty"))}
+                    }
+                        dataList.Add(row)
+                    End While
+                End Using
+            End Using
+
+            ' STEP 3: Use Transaction
+            Dim trans As SqlTransaction = Dbconnection.BeginTransaction()
+
+            For Each row In dataList
+                Dim lotNumber As String = row("LotNumber")
+                Dim eqpDesc As String = row("EQPDescription")
+                Dim reedType As String = row("ReedType")
+                Dim qty As Integer = row("Qty")
+
+                ' Determine output column
+                Dim columnToUpdate As String = ""
+                If eqpDesc.Contains("PUNCHPRESS") Then columnToUpdate = "PP_Out"
+                If eqpDesc.Contains("DEBUR") Then columnToUpdate = "Vib_Out"
+                If eqpDesc.Contains("RAMCO") Then columnToUpdate = "LW_Out"
+                If eqpDesc.Contains("ANNEAL") Then columnToUpdate = "Annealing_Out"
+                If eqpDesc.Contains("SPUT") Then columnToUpdate = "Sput_Out"
+
+                If Not existingLots.Contains(lotNumber) Then
+                    ' INSERT: Set only one column with qty, others 0
+                    Dim insertQuery As String = $"
+                INSERT INTO WIPM_Process_tb (
+                    Product, Lot_Number,
+                    PP_In, PP_Out,
+                    Vib_In, Vib_Out,
+                    LW_In, LW_Out,
+                    Annealing_In, Annealing_Out,
+                    Wash_In, Wash_Out,
+                    Sput_In, Sput_Out,
+                    SAM_In, SAM_Out,
+                    Target_WIP, GAP, DateTime, NMR
+                ) VALUES (
+                    @Product, @LotNumber,
+                    0, @PP_Out,
+                    0, @Vib_Out,
+                    0, @LW_Out,
+                    0, @Annealing_Out,
+                    0, 0,
+                    0, @Sput_Out,
+                    0, 0,
+                    0, 0, GETDATE(), 0
+                )"
+                    Using insertCmd As New SqlCommand(insertQuery, Dbconnection, trans)
+                        insertCmd.Parameters.AddWithValue("@Product", reedType)
+                        insertCmd.Parameters.AddWithValue("@LotNumber", lotNumber)
+                        insertCmd.Parameters.AddWithValue("@PP_Out", If(columnToUpdate = "PP_Out", qty, 0))
+                        insertCmd.Parameters.AddWithValue("@Vib_Out", If(columnToUpdate = "Vib_Out", qty, 0))
+                        insertCmd.Parameters.AddWithValue("@LW_Out", If(columnToUpdate = "LW_Out", qty, 0))
+                        insertCmd.Parameters.AddWithValue("@Annealing_Out", If(columnToUpdate = "Annealing_Out", qty, 0))
+                        insertCmd.Parameters.AddWithValue("@Sput_Out", If(columnToUpdate = "Sput_Out", qty, 0))
+                        insertCmd.ExecuteNonQuery()
+                    End Using
+                    existingLots.Add(lotNumber)
+                ElseIf columnToUpdate <> "" Then
+                    ' UPDATE: Only update if NMR is not 1
+                    Dim updateQuery As String = $"
+                UPDATE WIPM_Process_tb 
+                SET {columnToUpdate} = @Qty 
+                WHERE Lot_Number = @LotNumber AND ISNULL(NMR, 0) <> 1"
+                    Using updateCmd As New SqlCommand(updateQuery, Dbconnection, trans)
+                        updateCmd.Parameters.AddWithValue("@Qty", qty)
+                        updateCmd.Parameters.AddWithValue("@LotNumber", lotNumber)
+                        updateCmd.ExecuteNonQuery()
+                    End Using
+                End If
+            Next
+
+            trans.Commit()
+            MessageBox.Show("WIPM_Process_tb updated successfully (excluding NMR=1 rows).")
+
+        Catch ex As Exception
+            MessageBox.Show("Error: " & ex.Message)
+        Finally
+            ConClose()
+        End Try
+    End Sub
+
+    Sub Subtract_VibOut()
+        Try
+            ConOpen()
+
+            ' Efficient batch update: only where PP_Out > 0 and NMR = 0
+            Dim updateQuery As String = "
+            UPDATE WIPM_Process_tb
+            SET PP_Out = CASE 
+                            WHEN PP_Out - Vib_Out < 0 THEN 0 
+                            ELSE PP_Out - Vib_Out 
+                         END
+            WHERE PP_Out > 0 AND NMR = 0
+        "
+
+            Using updateCmd As New SqlCommand(updateQuery, Dbconnection)
+                Dim rowsAffected As Integer = updateCmd.ExecuteNonQuery()
+                MessageBox.Show("PP_Out updated for " & rowsAffected & " records where NMR = 0 and PP_Out > 0.")
+            End Using
+
+        Catch ex As Exception
+            MessageBox.Show("Error in Subtracting Debur out: " & ex.Message)
+        Finally
+            ConClose()
+        End Try
+    End Sub
+
+    Sub Subtract_LWOut()
+        Try
+            ConOpen()
+
+            ' Efficient batch update: only where Vib_Out > 0 and NMR = 0
+            Dim updateQuery As String = "
+            UPDATE WIPM_Process_tb
+            SET Vib_Out = CASE 
+                            WHEN Vib_Out - LW_Out < 0 THEN 0 
+                            ELSE Vib_Out - LW_Out 
+                         END
+            WHERE Vib_Out > 0 AND NMR = 0
+        "
+
+            Using updateCmd As New SqlCommand(updateQuery, Dbconnection)
+                Dim rowsAffected As Integer = updateCmd.ExecuteNonQuery()
+                MessageBox.Show("Vib_Out updated for " & rowsAffected & " records where NMR = 0 and Vib_Out > 0.")
+            End Using
+
+        Catch ex As Exception
+            MessageBox.Show("Error in Subtracting Load and Wash Out: " & ex.Message)
+        Finally
+            ConClose()
+        End Try
+    End Sub
+
+    Sub Subtract_AnnealingOut()
+        Try
+            ConOpen()
+
+            ' Efficient batch update: only where LW_Out > 0 and NMR = 0
+            Dim updateQuery As String = "
+            UPDATE WIPM_Process_tb
+            SET LW_Out = CASE 
+                            WHEN LW_Out - Annealing_Out < 0 THEN 0 
+                            ELSE LW_Out - Annealing_Out 
+                         END
+            WHERE LW_Out > 0 AND NMR = 0
+        "
+
+            Using updateCmd As New SqlCommand(updateQuery, Dbconnection)
+                Dim rowsAffected As Integer = updateCmd.ExecuteNonQuery()
+                MessageBox.Show("LW_Out updated for " & rowsAffected & " records where NMR = 0 and LW_Out > 0.")
+            End Using
+
+        Catch ex As Exception
+            MessageBox.Show("Error in Subtracting Annealing out: " & ex.Message)
+        Finally
+            ConClose()
+        End Try
+    End Sub
+
+    Sub Subtract_SputOut()
+        Try
+            ConOpen()
+
+            ' Efficient batch update: only where Annealing_Out > 0 and NMR = 0
+            Dim updateQuery As String = "
+            UPDATE WIPM_Process_tb
+            SET Annealing_Out = CASE 
+                            WHEN Annealing_Out - Sput_Out < 0 THEN 0 
+                            ELSE Annealing_Out - Sput_Out 
+                         END
+            WHERE Annealing_Out > 0 AND NMR = 0
+        "
+
+            Using updateCmd As New SqlCommand(updateQuery, Dbconnection)
+                Dim rowsAffected As Integer = updateCmd.ExecuteNonQuery()
+                MessageBox.Show("Annealing_Out updated for " & rowsAffected & " records where NMR = 0 and Annealing_Out > 0.")
+            End Using
+
+        Catch ex As Exception
+            MessageBox.Show("Error in Subtracting Annealing out: " & ex.Message)
+        Finally
+            ConClose()
+        End Try
+    End Sub
+
 End Module
