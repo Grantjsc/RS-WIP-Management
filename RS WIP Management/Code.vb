@@ -88,9 +88,17 @@ Module Function_Module
         Sput_Process = False
         SAM_Process = False
 
-        With Vibrator_Form
+        'With Vibrator_Form
+        '    .TopLevel = False
+        '    Form1.MainPanel.Controls.Add(Vibrator_Form)
+        '    .WindowState = FormWindowState.Maximized
+        '    .BringToFront()
+        '    .Show()
+        'End With
+
+        With PunchPress_Form
             .TopLevel = False
-            Form1.MainPanel.Controls.Add(Vibrator_Form)
+            Form1.MainPanel.Controls.Add(PunchPress_Form)
             .WindowState = FormWindowState.Maximized
             .BringToFront()
             .Show()
@@ -130,9 +138,18 @@ Module Function_Module
         Sput_Process = False
         SAM_Process = False
 
-        With LoadWash_Form
+        'With LoadWash_Form
+        '    .TopLevel = False
+        '    Form1.MainPanel.Controls.Add(LoadWash_Form)
+        '    .WindowState = FormWindowState.Maximized
+        '    .BringToFront()
+        '    .Show()
+        'End With
+
+
+        With Vibrator_Form
             .TopLevel = False
-            Form1.MainPanel.Controls.Add(LoadWash_Form)
+            Form1.MainPanel.Controls.Add(Vibrator_Form)
             .WindowState = FormWindowState.Maximized
             .BringToFront()
             .Show()
@@ -173,9 +190,18 @@ Module Function_Module
         Sput_Process = False
         SAM_Process = False
 
-        With Anneal_Form
+        'With Anneal_Form
+        '    .TopLevel = False
+        '    Form1.MainPanel.Controls.Add(Anneal_Form)
+        '    .WindowState = FormWindowState.Maximized
+        '    .BringToFront()
+        '    .Show()
+        'End With
+
+
+        With LoadWash_Form
             .TopLevel = False
-            Form1.MainPanel.Controls.Add(Anneal_Form)
+            Form1.MainPanel.Controls.Add(LoadWash_Form)
             .WindowState = FormWindowState.Maximized
             .BringToFront()
             .Show()
@@ -251,9 +277,17 @@ Module Function_Module
         Sput_Process = True
         SAM_Process = False
 
-        With Sput_Form
+        'With Sput_Form
+        '    .TopLevel = False
+        '    Form1.MainPanel.Controls.Add(Sput_Form)
+        '    .WindowState = FormWindowState.Maximized
+        '    .BringToFront()
+        '    .Show()
+        'End With
+
+        With Anneal_Form
             .TopLevel = False
-            Form1.MainPanel.Controls.Add(Sput_Form)
+            Form1.MainPanel.Controls.Add(Anneal_Form)
             .WindowState = FormWindowState.Maximized
             .BringToFront()
             .Show()

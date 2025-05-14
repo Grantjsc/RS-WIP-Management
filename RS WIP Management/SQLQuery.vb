@@ -3404,8 +3404,16 @@ Module Query_Module
 
         If Dbconnection.State = ConnectionState.Open Then
             command.Connection = Dbconnection
+            'command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+            '                     FROM WIPM_Data_tb WHERE EQPDescription Like '%PUNCHPRESS%' Order by TrackOutTime ASC"
+
             command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
-                                 FROM WIPM_Data_tb WHERE EQPDescription Like '%PUNCHPRESS%' Order by TrackOutTime DESC"
+                                 FROM WIPM_Data_tb AS main WHERE EQPDescription Like '%PUNCHPRESS%' AND NOT EXISTS (
+                                SELECT 1
+                                FROM WIPM_Data_tb AS sub
+                                WHERE sub.ProductionLotNumber = main.ProductionLotNumber 
+                                AND sub.EQPDescription like '%DEBUR%') Order by TrackOutTime ASC"
+
 
             Dim rdr As SqlDataReader = command.ExecuteReader
 
@@ -3466,19 +3474,28 @@ Module Query_Module
 
         If Dbconnection.State = ConnectionState.Open Then
             command.Connection = Dbconnection
-            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
-                       FROM WIPM_Data_tb 
-                       WHERE EQPDescription LIKE '%PUNCHPRESS%' AND ProductionLotNumber = @Search Order by TrackOutTime DESC"
 
-            command.Parameters.AddWithValue("@Search", PunchPress_Form.txtSearch.Text)
+            ' Updated SQL with UPPER() to ensure case-insensitive comparison
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode
+                                    FROM WIPM_Data_tb AS main
+                                    WHERE EQPDescription LIKE '%PUNCHPRESS%'
+                                      AND UPPER(ProductionLotNumber) = UPPER(@Search)
+                                      AND NOT EXISTS (
+                                        SELECT 1
+                                        FROM WIPM_Data_tb AS sub
+                                        WHERE sub.ProductionLotNumber = main.ProductionLotNumber
+                                          AND sub.EQPDescription LIKE '%DEBUR%')
+                                    ORDER BY TrackOutTime ASC"
 
-            Dim rdr As SqlDataReader = command.ExecuteReader
+            ' Trimmed input to avoid leading/trailing whitespace issues
+            command.Parameters.AddWithValue("@Search", PunchPress_Form.txtSearch.Text.Trim())
 
+            Dim rdr As SqlDataReader = command.ExecuteReader()
             table.Load(rdr)
 
             PunchPress_Form.DataGridView1.DataSource = table
 
-            ' Bold the header cells
+            ' Style the grid
             For Each column As DataGridViewColumn In PunchPress_Form.DataGridView1.Columns
                 column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 9, FontStyle.Bold)
                 column.HeaderCell.Style.ForeColor = Color.White
@@ -3488,36 +3505,24 @@ Module Query_Module
             Next
 
             With PunchPress_Form
-                '.DataGridView1.Columns("NMR").ReadOnly = False
                 .DataGridView1.Columns("NMR").AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
-
                 .DataGridView1.Columns("ProductionLotNumber").ReadOnly = True
                 .DataGridView1.Columns("ProductionLotNumber").HeaderText = "Production Lot Number"
-
                 .DataGridView1.Columns("EQPDescription").ReadOnly = True
                 .DataGridView1.Columns("EQPDescription").HeaderText = "EQP Description"
-
                 .DataGridView1.Columns("TrackOutTime").ReadOnly = True
                 .DataGridView1.Columns("TrackOutTime").HeaderText = "TrackOut Time"
-
                 .DataGridView1.Columns("ReedType").ReadOnly = True
                 .DataGridView1.Columns("ReedType").HeaderText = "Reed Type"
-
                 .DataGridView1.Columns("Qty").ReadOnly = True
-
                 .DataGridView1.Columns("Description").ReadOnly = True
-
                 .DataGridView1.Columns("LotCode").ReadOnly = True
 
-                '.DataGridView1.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(116, 185, 255)
                 .DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
                 .DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
-
                 .DataGridView1.EnableHeadersVisualStyles = False
                 .DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
-
             End With
-
         End If
 
         ConClose()
@@ -3531,12 +3536,22 @@ Module Query_Module
 
             If PunchPress_Form.txtSearch.Text = "" Or PunchPress_Form.txtSearch.Text = "Search lot number" Then
                 query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
-                                 FROM WIPM_Data_tb WHERE EQPDescription Like '%PUNCHPRESS%' Order by TrackOutTime DESC"
+                                 FROM WIPM_Data_tb AS main WHERE EQPDescription Like '%PUNCHPRESS%' AND NOT EXISTS (
+                                SELECT 1
+                                FROM WIPM_Data_tb AS sub
+                                WHERE sub.ProductionLotNumber = main.ProductionLotNumber 
+                                AND sub.EQPDescription like '%DEBUR%') Order by TrackOutTime ASC"
             Else
-                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
-                       FROM WIPM_Data_tb 
-                       WHERE EQPDescription LIKE '%PUNCHPRESS%' AND ProductionLotNumber LIKE @Search Order by TrackOutTime DESC"
-
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode
+                                 FROM WIPM_Data_tb AS main
+                                 WHERE EQPDescription LIKE '%PUNCHPRESS%' 
+                                 AND UPPER(ProductionLotNumber) LIKE UPPER(@Search) 
+                                 AND NOT EXISTS (
+                                 SELECT 1 
+                                 FROM WIPM_Data_tb AS sub 
+                                 WHERE sub.ProductionLotNumber = main.ProductionLotNumber 
+                                 AND sub.EQPDescription LIKE '%DEBUR%')
+                                 ORDER BY TrackOutTime ASC"
             End If
 
             adap = New SqlDataAdapter(query, Dbconnection)
@@ -3660,8 +3675,15 @@ Module Query_Module
 
         If Dbconnection.State = ConnectionState.Open Then
             command.Connection = Dbconnection
+            'command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+            '                        FROM WIPM_Data_tb WHERE EQPDescription Like '%DEBUR%' Order by TrackOutTime ASC"
+
             command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
-                                    FROM WIPM_Data_tb WHERE EQPDescription Like '%DEBUR%' Order by TrackOutTime DESC"
+                                 FROM WIPM_Data_tb AS main WHERE EQPDescription Like '%DEBUR%' AND NOT EXISTS (
+                                SELECT 1
+                                FROM WIPM_Data_tb AS sub
+                                WHERE sub.ProductionLotNumber = main.ProductionLotNumber 
+                                AND sub.EQPDescription like '%RAMCO%') Order by TrackOutTime ASC"
 
             Dim rdr As SqlDataReader = command.ExecuteReader
 
@@ -3722,11 +3744,22 @@ Module Query_Module
 
         If Dbconnection.State = ConnectionState.Open Then
             command.Connection = Dbconnection
-            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
-                       FROM WIPM_Data_tb 
-                       WHERE EQPDescription LIKE '%DEBUR%' AND ProductionLotNumber = @Search Order by TrackOutTime DESC"
+            'command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+            '           FROM WIPM_Data_tb 
+            '           WHERE EQPDescription LIKE '%DEBUR%' AND ProductionLotNumber = @Search Order by TrackOutTime ASC"
 
-            command.Parameters.AddWithValue("@Search", Vibrator_Form.txtSearch.Text)
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode
+                                    FROM WIPM_Data_tb AS main
+                                    WHERE EQPDescription LIKE '%DEBUR%'
+                                      AND UPPER(ProductionLotNumber) = UPPER(@Search)
+                                      AND NOT EXISTS (
+                                        SELECT 1
+                                        FROM WIPM_Data_tb AS sub
+                                        WHERE sub.ProductionLotNumber = main.ProductionLotNumber
+                                          AND sub.EQPDescription LIKE '%RAMCO%')
+                                    ORDER BY TrackOutTime ASC"
+
+            command.Parameters.AddWithValue("@Search", Vibrator_Form.txtSearch.Text.Trim())
 
             Dim rdr As SqlDataReader = command.ExecuteReader
 
@@ -3786,12 +3819,30 @@ Module Query_Module
             Dim query As String
 
             If Vibrator_Form.txtSearch.Text = "" Or Vibrator_Form.txtSearch.Text = "Search lot number" Then
+                'query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                '                 FROM WIPM_Data_tb WHERE EQPDescription Like '%DEBUR%' Order by TrackOutTime ASC"
+
                 query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
-                                 FROM WIPM_Data_tb WHERE EQPDescription Like '%DEBUR%' Order by TrackOutTime DESC"
+                                 FROM WIPM_Data_tb AS main WHERE EQPDescription Like '%DEBUR%' AND NOT EXISTS (
+                                SELECT 1
+                                FROM WIPM_Data_tb AS sub
+                                WHERE sub.ProductionLotNumber = main.ProductionLotNumber 
+                                AND sub.EQPDescription like '%RAMCO%') Order by TrackOutTime ASC"
             Else
-                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
-                       FROM WIPM_Data_tb 
-                       WHERE EQPDescription LIKE '%DEBUR%' AND ProductionLotNumber LIKE @Search Order by TrackOutTime DESC"
+                'query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                '       FROM WIPM_Data_tb 
+                '       WHERE EQPDescription LIKE '%DEBUR%' AND ProductionLotNumber LIKE @Search Order by TrackOutTime ASC"
+
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode
+                                 FROM WIPM_Data_tb AS main
+                                 WHERE EQPDescription LIKE '%DEBUR%' 
+                                 AND UPPER(ProductionLotNumber) LIKE UPPER(@Search) 
+                                 AND NOT EXISTS (
+                                 SELECT 1 
+                                 FROM WIPM_Data_tb AS sub 
+                                 WHERE sub.ProductionLotNumber = main.ProductionLotNumber 
+                                 AND sub.EQPDescription LIKE '%RAMCO%')
+                                 ORDER BY TrackOutTime ASC"
 
             End If
 
@@ -3915,8 +3966,15 @@ Module Query_Module
 
         If Dbconnection.State = ConnectionState.Open Then
             command.Connection = Dbconnection
+            'command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+            '                        FROM WIPM_Data_tb WHERE EQPDescription Like '%RAMCO%' Order by TrackOutTime ASC"
+
             command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
-                                    FROM WIPM_Data_tb WHERE EQPDescription Like '%RAMCO%' Order by TrackOutTime DESC"
+                                 FROM WIPM_Data_tb AS main WHERE EQPDescription Like '%RAMCO%' AND NOT EXISTS (
+                                SELECT 1
+                                FROM WIPM_Data_tb AS sub
+                                WHERE sub.ProductionLotNumber = main.ProductionLotNumber 
+                                AND sub.EQPDescription like '%ANNEAL%') Order by TrackOutTime ASC"
 
             Dim rdr As SqlDataReader = command.ExecuteReader
 
@@ -3978,11 +4036,22 @@ Module Query_Module
 
         If Dbconnection.State = ConnectionState.Open Then
             command.Connection = Dbconnection
-            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
-                       FROM WIPM_Data_tb 
-                       WHERE EQPDescription LIKE '%RAMCO%' AND ProductionLotNumber = @Search Order by TrackOutTime DESC"
+            'command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+            '           FROM WIPM_Data_tb 
+            '           WHERE EQPDescription LIKE '%RAMCO%' AND ProductionLotNumber = @Search Order by TrackOutTime ASC"
 
-            command.Parameters.AddWithValue("@Search", LoadWash_Form.txtSearch.Text)
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode
+                                    FROM WIPM_Data_tb AS main
+                                    WHERE EQPDescription LIKE '%RAMCO%'
+                                      AND UPPER(ProductionLotNumber) = UPPER(@Search)
+                                      AND NOT EXISTS (
+                                        SELECT 1
+                                        FROM WIPM_Data_tb AS sub
+                                        WHERE sub.ProductionLotNumber = main.ProductionLotNumber
+                                          AND sub.EQPDescription LIKE '%ANNEAL%')
+                                    ORDER BY TrackOutTime ASC"
+
+            command.Parameters.AddWithValue("@Search", LoadWash_Form.txtSearch.Text.Trim())
 
             Dim rdr As SqlDataReader = command.ExecuteReader
 
@@ -4042,13 +4111,31 @@ Module Query_Module
             Dim query As String
 
             If LoadWash_Form.txtSearch.Text = "" Or LoadWash_Form.txtSearch.Text = "Search lot number" Then
-                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
-                                 FROM WIPM_Data_tb WHERE EQPDescription Like '%RAMCO%' Order by TrackOutTime DESC"
-            Else
-                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
-                       FROM WIPM_Data_tb 
-                       WHERE EQPDescription LIKE '%RAMCO%' AND ProductionLotNumber LIKE @Search Order by TrackOutTime DESC"
+                '    query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                '                     FROM WIPM_Data_tb WHERE EQPDescription Like '%RAMCO%' Order by TrackOutTime ASC"
+                'Else
+                '    query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                '           FROM WIPM_Data_tb 
+                '           WHERE EQPDescription LIKE '%RAMCO%' AND ProductionLotNumber LIKE @Search Order by TrackOutTime ASC"
 
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                                 FROM WIPM_Data_tb AS main WHERE EQPDescription Like '%RAMCO%' AND NOT EXISTS (
+                                SELECT 1
+                                FROM WIPM_Data_tb AS sub
+                                WHERE sub.ProductionLotNumber = main.ProductionLotNumber 
+                                AND sub.EQPDescription like '%ANNEAL%') Order by TrackOutTime ASC"
+            Else
+
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode
+                                 FROM WIPM_Data_tb AS main
+                                 WHERE EQPDescription LIKE '%RAMCO%' 
+                                 AND UPPER(ProductionLotNumber) LIKE UPPER(@Search) 
+                                 AND NOT EXISTS (
+                                 SELECT 1 
+                                 FROM WIPM_Data_tb AS sub 
+                                 WHERE sub.ProductionLotNumber = main.ProductionLotNumber 
+                                 AND sub.EQPDescription LIKE '%ANNEAL%')
+                                 ORDER BY TrackOutTime ASC"
             End If
 
             adap = New SqlDataAdapter(query, Dbconnection)
@@ -4171,8 +4258,15 @@ Module Query_Module
 
         If Dbconnection.State = ConnectionState.Open Then
             command.Connection = Dbconnection
+            'command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+            '                        FROM WIPM_Data_tb WHERE EQPDescription Like '%ANNEAL%' Order by TrackOutTime ASC"
+
             command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
-                                    FROM WIPM_Data_tb WHERE EQPDescription Like '%ANNEAL%' Order by TrackOutTime DESC"
+                                 FROM WIPM_Data_tb AS main WHERE EQPDescription Like '%ANNEAL%' AND NOT EXISTS (
+                                SELECT 1
+                                FROM WIPM_Data_tb AS sub
+                                WHERE sub.ProductionLotNumber = main.ProductionLotNumber 
+                                AND sub.EQPDescription like '%SPUT%') Order by TrackOutTime ASC"
 
             Dim rdr As SqlDataReader = command.ExecuteReader
 
@@ -4233,11 +4327,22 @@ Module Query_Module
 
         If Dbconnection.State = ConnectionState.Open Then
             command.Connection = Dbconnection
-            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
-                       FROM WIPM_Data_tb 
-                       WHERE EQPDescription LIKE '%ANNEAL%' AND ProductionLotNumber = @Search Order by TrackOutTime DESC"
+            'command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+            '           FROM WIPM_Data_tb 
+            '           WHERE EQPDescription LIKE '%ANNEAL%' AND ProductionLotNumber = @Search Order by TrackOutTime ASC"
 
-            command.Parameters.AddWithValue("@Search", Anneal_Form.txtSearch.Text)
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode
+                                    FROM WIPM_Data_tb AS main
+                                    WHERE EQPDescription LIKE '%ANNEAL%'
+                                      AND UPPER(ProductionLotNumber) = UPPER(@Search)
+                                      AND NOT EXISTS (
+                                        SELECT 1
+                                        FROM WIPM_Data_tb AS sub
+                                        WHERE sub.ProductionLotNumber = main.ProductionLotNumber
+                                          AND sub.EQPDescription LIKE '%SPUT%')
+                                    ORDER BY TrackOutTime ASC"
+
+            command.Parameters.AddWithValue("@Search", Anneal_Form.txtSearch.Text.Trim())
 
             Dim rdr As SqlDataReader = command.ExecuteReader
 
@@ -4297,12 +4402,31 @@ Module Query_Module
             Dim query As String
 
             If Anneal_Form.txtSearch.Text = "" Or Anneal_Form.txtSearch.Text = "Search lot number" Then
+                '    query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                '                     FROM WIPM_Data_tb WHERE EQPDescription Like '%ANNEAL%' Order by TrackOutTime ASC"
+                'Else
+                '    query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                '           FROM WIPM_Data_tb 
+                '           WHERE EQPDescription LIKE '%ANNEAL%' AND ProductionLotNumber LIKE @Search Order by TrackOutTime ASC"
+
                 query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
-                                 FROM WIPM_Data_tb WHERE EQPDescription Like '%ANNEAL%' Order by TrackOutTime DESC"
+                                 FROM WIPM_Data_tb AS main WHERE EQPDescription Like '%ANNEAL%' AND NOT EXISTS (
+                                SELECT 1
+                                FROM WIPM_Data_tb AS sub
+                                WHERE sub.ProductionLotNumber = main.ProductionLotNumber 
+                                AND sub.EQPDescription like '%SPUT%') Order by TrackOutTime ASC"
             Else
-                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
-                       FROM WIPM_Data_tb 
-                       WHERE EQPDescription LIKE '%ANNEAL%' AND ProductionLotNumber LIKE @Search Order by TrackOutTime DESC"
+
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode
+                                 FROM WIPM_Data_tb AS main
+                                 WHERE EQPDescription LIKE '%ANNEAL%' 
+                                 AND UPPER(ProductionLotNumber) LIKE UPPER(@Search) 
+                                 AND NOT EXISTS (
+                                 SELECT 1 
+                                 FROM WIPM_Data_tb AS sub 
+                                 WHERE sub.ProductionLotNumber = main.ProductionLotNumber 
+                                 AND sub.EQPDescription LIKE '%SPUT%')
+                                 ORDER BY TrackOutTime ASC"
 
             End If
 
@@ -4427,7 +4551,7 @@ Module Query_Module
         If Dbconnection.State = ConnectionState.Open Then
             command.Connection = Dbconnection
             command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
-                                    FROM WIPM_Data_tb WHERE EQPDescription Like '%SPUT%' Order by TrackOutTime DESC"
+                                    FROM WIPM_Data_tb WHERE EQPDescription Like '%SPUT%' Order by TrackOutTime ASC"
 
             Dim rdr As SqlDataReader = command.ExecuteReader
 
@@ -4490,7 +4614,7 @@ Module Query_Module
             command.Connection = Dbconnection
             command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
                        FROM WIPM_Data_tb 
-                       WHERE EQPDescription LIKE '%SPUT%' AND ProductionLotNumber = @Search Order by TrackOutTime DESC"
+                       WHERE EQPDescription LIKE '%SPUT%' AND ProductionLotNumber = @Search Order by TrackOutTime ASC"
 
             command.Parameters.AddWithValue("@Search", Sput_Form.txtSearch.Text)
 
@@ -4553,11 +4677,11 @@ Module Query_Module
 
             If Sput_Form.txtSearch.Text = "" Or Sput_Form.txtSearch.Text = "Search lot number" Then
                 query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
-                                 FROM WIPM_Data_tb WHERE EQPDescription Like '%SPUT%' Order by TrackOutTime DESC"
+                                 FROM WIPM_Data_tb WHERE EQPDescription Like '%SPUT%' Order by TrackOutTime ASC"
             Else
                 query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
                        FROM WIPM_Data_tb 
-                       WHERE EQPDescription LIKE '%SPUT%' AND ProductionLotNumber LIKE @Search Order by TrackOutTime DESC"
+                       WHERE EQPDescription LIKE '%SPUT%' AND ProductionLotNumber LIKE @Search Order by TrackOutTime ASC"
 
             End If
 

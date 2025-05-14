@@ -88,6 +88,7 @@ Partial Class Form1
         Me.PunchPressToolStripMenuItem.Name = "PunchPressToolStripMenuItem"
         Me.PunchPressToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
         Me.PunchPressToolStripMenuItem.Text = "Punch Press"
+        Me.PunchPressToolStripMenuItem.Visible = False
         '
         'VibratorToolStripMenuItem
         '
