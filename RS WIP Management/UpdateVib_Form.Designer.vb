@@ -1,9 +1,9 @@
-﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
-Partial Class UpdateWIP_Form
+﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
+Partial Class UpdateVib_Form
     Inherits System.Windows.Forms.Form
 
     'Form overrides dispose to clean up the component list.
-    <System.Diagnostics.DebuggerNonUserCode()>
+    <System.Diagnostics.DebuggerNonUserCode()> _
     Protected Overrides Sub Dispose(ByVal disposing As Boolean)
         Try
             If disposing AndAlso components IsNot Nothing Then
@@ -20,9 +20,9 @@ Partial Class UpdateWIP_Form
     'NOTE: The following procedure is required by the Windows Form Designer
     'It can be modified using the Windows Form Designer.  
     'Do not modify it using the code editor.
-    <System.Diagnostics.DebuggerStepThrough()>
+    <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
-        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(UpdateWIP_Form))
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(UpdateVib_Form))
         Me.Guna2CustomGradientPanel1 = New Guna.UI2.WinForms.Guna2CustomGradientPanel()
         Me.GroupBoxTitle = New Guna.UI2.WinForms.Guna2GroupBox()
         Me.btnUpdate = New Guna.UI2.WinForms.Guna2Button()
@@ -50,7 +50,7 @@ Partial Class UpdateWIP_Form
         Me.Guna2CustomGradientPanel1.Location = New System.Drawing.Point(0, 0)
         Me.Guna2CustomGradientPanel1.Name = "Guna2CustomGradientPanel1"
         Me.Guna2CustomGradientPanel1.Size = New System.Drawing.Size(900, 650)
-        Me.Guna2CustomGradientPanel1.TabIndex = 2
+        Me.Guna2CustomGradientPanel1.TabIndex = 3
         '
         'GroupBoxTitle
         '
@@ -77,7 +77,7 @@ Partial Class UpdateWIP_Form
         Me.GroupBoxTitle.Name = "GroupBoxTitle"
         Me.GroupBoxTitle.Size = New System.Drawing.Size(841, 589)
         Me.GroupBoxTitle.TabIndex = 3
-        Me.GroupBoxTitle.Text = "UPDATE SPUT TARGET"
+        Me.GroupBoxTitle.Text = "UPDATE VIBRATOR TARGET"
         Me.GroupBoxTitle.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
         '
         'btnUpdate
@@ -218,15 +218,15 @@ Partial Class UpdateWIP_Form
         Me.lblTitle.TabIndex = 10
         Me.lblTitle.Text = "Target WIP"
         '
-        'UpdateWIP_Form
+        'UpdateVib_Form
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(900, 650)
         Me.Controls.Add(Me.Guna2CustomGradientPanel1)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
-        Me.Name = "UpdateWIP_Form"
-        Me.Text = "UpdateWIP_Form"
+        Me.Name = "UpdateVib_Form"
+        Me.Text = "UpdateVib_Form"
         Me.Guna2CustomGradientPanel1.ResumeLayout(False)
         Me.GroupBoxTitle.ResumeLayout(False)
         Me.GroupBoxTitle.PerformLayout()
@@ -238,11 +238,11 @@ Partial Class UpdateWIP_Form
     Friend WithEvents Guna2CustomGradientPanel1 As Guna.UI2.WinForms.Guna2CustomGradientPanel
     Friend WithEvents GroupBoxTitle As Guna.UI2.WinForms.Guna2GroupBox
     Friend WithEvents btnUpdate As Guna.UI2.WinForms.Guna2Button
+    Friend WithEvents DataGridView1 As DataGridView
     Friend WithEvents btnClose As Guna.UI2.WinForms.Guna2Button
     Friend WithEvents lblProdName As Label
     Friend WithEvents Label3 As Label
     Friend WithEvents txtTarget As Guna.UI2.WinForms.Guna2TextBox
     Friend WithEvents Label2 As Label
     Friend WithEvents lblTitle As Label
-    Friend WithEvents DataGridView1 As DataGridView
 End Class

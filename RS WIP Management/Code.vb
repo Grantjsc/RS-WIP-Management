@@ -352,6 +352,17 @@ Module Function_Module
 
     End Sub
 
+    Sub UpdateVib_clicked()
+        With UpdateVib_Form
+            .TopLevel = False
+            Form1.Main.Controls.Add(UpdateVib_Form)
+            .WindowState = FormWindowState.Maximized
+            .BringToFront()
+            .Show()
+        End With
+
+    End Sub
+
     Sub ViewAll_clicked()
         With ViewData_Form
             .TopLevel = False

@@ -107,12 +107,24 @@
 
     Private Sub UpdateWIPToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles UpdateWIPToolStripMenuItem.Click
         'UpdateWIP_clicked()
-        PassUpdateWIP_Form.ShowDialog()
+        'PassUpdateWIP_Form.ShowDialog()
     End Sub
 
     Private Sub ViewWIPToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ViewWIPToolStripMenuItem.Click
         'WIP_Form.ShowDialog()
         WIP_clicked()
         'PassWIP_Form.ShowDialog()
+    End Sub
+
+    Public VibTarget As Boolean = False
+
+    Private Sub VibratorToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles VibratorToolStripMenuItem1.Click
+        VibTarget = True
+        PassUpdateWIP_Form.ShowDialog()
+    End Sub
+
+    Private Sub SputToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles SputToolStripMenuItem1.Click
+        VibTarget = False
+        PassUpdateWIP_Form.ShowDialog()
     End Sub
 End Class

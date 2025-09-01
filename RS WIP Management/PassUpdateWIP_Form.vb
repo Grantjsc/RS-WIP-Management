@@ -1,10 +1,15 @@
 ﻿Public Class PassUpdateWIP_Form
     Private Sub btnOkay_Click(sender As Object, e As EventArgs) Handles btnOkay.Click
         If txtPass.Text = "rswipmaster" Then
-            UpdateWIP_clicked()
-            Me.Close()
+            If Form1.VibTarget = True Then
+                UpdateVib_clicked()
+                Me.Close()
+            Else
+                UpdateWIP_clicked()
+                Me.Close()
+            End If
         Else
-            MsgBox("Wrong password!", MsgBoxStyle.Critical)
+                MsgBox("Wrong password!", MsgBoxStyle.Critical)
             txtPass.Text = ""
         End If
     End Sub
@@ -12,8 +17,13 @@
     Private Sub txtPass_KeyUp(sender As Object, e As KeyEventArgs) Handles txtPass.KeyUp
         If e.KeyCode = Keys.Enter Then
             If txtPass.Text = "rswipmaster" Then
-                UpdateWIP_clicked()
-                Me.Close()
+                If Form1.VibTarget = True Then
+                    UpdateVib_clicked()
+                    Me.Close()
+                Else
+                    UpdateWIP_clicked()
+                    Me.Close()
+                End If
             Else
                 MsgBox("Wrong password!", MsgBoxStyle.Critical)
                 txtPass.Text = ""

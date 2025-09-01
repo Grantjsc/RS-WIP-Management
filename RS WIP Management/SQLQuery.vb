@@ -1715,6 +1715,117 @@ Module Query_Module
     'End Sub
 
 
+    'Sub Load_Avail_WIP()
+    '    Dim command As New SqlCommand("", Dbconnection)
+    '    Dim table As New DataTable
+
+    '    ConOpen()
+
+    '    If Dbconnection.State = ConnectionState.Open Then
+    '        Try
+    '            command.Connection = Dbconnection
+
+    '            'command.CommandText = "SELECT Product, SUM(Vib_Out) AS VIB_OUT, MAX(VibratorTarget) AS VibratorTarget, " &
+    '            '              "SUM(LW_Out) AS LW_OUT, SUM(Annealing_Out) AS ANN_OUT, " &
+    '            '              "SUM(Sput_Out) AS SPUT_OUT, MAX(Target_WIP) AS Target_WIP, MAX(GAP) AS GAP " &
+    '            '              "FROM WIPM_Process_tb WHERE NMR = 0 GROUP BY Product"
+
+    '            'command.CommandText = "SELECT Product, SUM(Vib_Out) AS VIB_OUT, MAX(VibratorTarget) AS VibratorTarget, " &
+    '            '              "SUM(LW_Out) AS LW_OUT, SUM(Annealing_Out) AS ANN_OUT, " &
+    '            '              "SUM(Sput_Out) AS SPUT_OUT, MAX(Target_WIP) AS Target_WIP, MAX(GAP) AS GAP " &
+    '            '              "FROM WIPM_Process_tb WHERE NMR = 0 GROUP BY Product"
+
+    '            command.CommandText = "
+    '                                    SELECT 
+    '                                        Product,
+    '                                        FORMAT(SUM(Vib_Out), 'N0') AS VIB_OUT,
+    '                                        FORMAT(MAX(VibratorTarget), 'N0') AS VibratorTarget,
+    '                                        FORMAT(SUM(LW_Out), 'N0') AS LW_OUT,
+    '                                        FORMAT(SUM(Annealing_Out), 'N0') AS ANN_OUT,
+    '                                        FORMAT(SUM(Sput_Out), 'N0') AS SPUT_OUT,
+    '                                        FORMAT(MAX(Target_WIP), 'N0') AS Target_WIP,
+    '                                        FORMAT(MAX(GAP), 'N0') AS GAP
+    '                                    FROM WIPM_Process_tb
+    '                                    WHERE NMR = 0
+    '                                    GROUP BY Product"
+
+    '            Using rdr As SqlDataReader = command.ExecuteReader()
+    '                table.Load(rdr)
+    '            End Using
+
+    '            ' After binding the DataTable to the DataGridView
+    '            WIP_Form.DataGridView1.DataSource = table
+
+    '            ' Format DataGridView columns
+    '            For Each column As DataGridViewColumn In WIP_Form.DataGridView1.Columns
+    '                column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 11, FontStyle.Bold)
+    '                column.HeaderCell.Style.ForeColor = Color.White
+    '                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+    '                column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+    '                column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 10)
+    '            Next
+
+    '            ' Rename column headers for clarity
+    '            WIP_Form.DataGridView1.Columns("Product").HeaderText = "Product Name"
+    '            WIP_Form.DataGridView1.Columns("VIB_OUT").HeaderText = "Vibrator"
+    '            WIP_Form.DataGridView1.Columns("VibratorTarget").HeaderText = "Vibrator Target"
+    '            WIP_Form.DataGridView1.Columns("LW_OUT").HeaderText = "Load and Wash"
+    '            WIP_Form.DataGridView1.Columns("ANN_OUT").HeaderText = "Annealing"
+    '            WIP_Form.DataGridView1.Columns("SPUT_OUT").HeaderText = "Sput"
+    '            WIP_Form.DataGridView1.Columns("Target_WIP").HeaderText = "Sput Target"
+    '            WIP_Form.DataGridView1.Columns("GAP").HeaderText = "Sputs GAP"
+
+    '            ' Clear row styles to prevent conflicts
+    '            For Each row As DataGridViewRow In WIP_Form.DataGridView1.Rows
+    '                row.DefaultCellStyle.BackColor = Color.Empty
+    '                row.DefaultCellStyle.ForeColor = Color.Empty
+    '            Next
+
+    '            ' Apply conditional formatting at the cell level
+    '            For Each row As DataGridViewRow In WIP_Form.DataGridView1.Rows
+    '                For Each cell As DataGridViewCell In row.Cells
+    '                    Dim cellValue As Decimal
+    '                    ' Check if the cell value is numeric and negative
+    '                    If Decimal.TryParse(cell.Value?.ToString(), cellValue) AndAlso cellValue < 0 Then
+    '                        cell.Style.BackColor = Color.Red
+    '                        cell.Style.ForeColor = Color.White
+    '                    Else
+    '                        ' Reset to default style for non-negative or non-numeric values
+    '                        cell.Style.BackColor = Color.Empty
+    '                        cell.Style.ForeColor = Color.Empty
+    '                    End If
+    '                Next
+    '            Next
+
+    '            ' Style the DataGridView
+    '            WIP_Form.DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+    '            WIP_Form.DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
+    '            WIP_Form.DataGridView1.EnableHeadersVisualStyles = False
+    '            WIP_Form.DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+    '        Catch ex As Exception
+    '            ' Handle any exceptions
+    '            MessageBox.Show("Error: " & ex.Message, "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+    '        Finally
+    '            ' Always close the connection
+    '            ConClose()
+    '        End Try
+    '    Else
+    '        MessageBox.Show("Database connection failed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+    '    End If
+
+    'End Sub
+
+    Function ToDecimalSafe(val As Object) As Decimal
+        If val Is Nothing OrElse IsDBNull(val) Then Return 0
+        Dim str = val.ToString().Replace(",", "").Trim()
+        Dim result As Decimal
+        If Decimal.TryParse(str, result) Then
+            Return result
+        End If
+        Return 0
+    End Function
+
     Sub Load_Avail_WIP()
         Dim command As New SqlCommand("", Dbconnection)
         Dim table As New DataTable
@@ -1724,75 +1835,103 @@ Module Query_Module
         If Dbconnection.State = ConnectionState.Open Then
             Try
                 command.Connection = Dbconnection
-                command.CommandText = "SELECT Product, SUM(Vib_Out) AS VIB_OUT, " &
-                              "SUM(LW_Out) AS LW_OUT, SUM(Annealing_Out) AS ANN_OUT, " &
-                              "SUM(Sput_Out) AS SPUT_OUT, MAX(Target_WIP) AS Target_WIP, MAX(GAP) AS GAP " &
-                              "FROM WIPM_Process_tb WHERE NMR = 0 GROUP BY Product"
+                command.CommandText = "
+                SELECT 
+                    Product,
+                    SUM(Vib_Out) AS VIB_OUT,
+                    MAX(VibratorTarget) AS VibratorTarget,
+                    SUM(LW_Out) AS LW_OUT,
+                    SUM(Annealing_Out) AS ANN_OUT,
+                    SUM(Sput_Out) AS SPUT_OUT,
+                    MAX(Target_WIP) AS Target_WIP
+                FROM WIPM_Process_tb
+                WHERE NMR = 0
+                GROUP BY Product
+            "
 
                 Using rdr As SqlDataReader = command.ExecuteReader()
                     table.Load(rdr)
                 End Using
 
-                ' After binding the DataTable to the DataGridView
-                WIP_Form.DataGridView1.DataSource = table
+                With WIP_Form.DataGridView1
+                    .DataSource = table
 
-                ' Format DataGridView columns
-                For Each column As DataGridViewColumn In WIP_Form.DataGridView1.Columns
-                    column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 11, FontStyle.Bold)
-                    column.HeaderCell.Style.ForeColor = Color.White
-                    column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
-                    column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
-                    column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 10)
-                Next
+                    ' Add handler to format rows after binding
+                    RemoveHandler .DataBindingComplete, AddressOf FormatWIPRows ' Avoid multiple bindings
+                    AddHandler .DataBindingComplete, AddressOf FormatWIPRows
 
-                ' Rename column headers for clarity
-                WIP_Form.DataGridView1.Columns("Product").HeaderText = "Product Name"
-                WIP_Form.DataGridView1.Columns("VIB_OUT").HeaderText = "Vibrator"
-                WIP_Form.DataGridView1.Columns("LW_OUT").HeaderText = "Load and Wash"
-                WIP_Form.DataGridView1.Columns("ANN_OUT").HeaderText = "Annealing"
-                WIP_Form.DataGridView1.Columns("SPUT_OUT").HeaderText = "Sput"
-                WIP_Form.DataGridView1.Columns("Target_WIP").HeaderText = "Target"
-
-                ' Clear row styles to prevent conflicts
-                For Each row As DataGridViewRow In WIP_Form.DataGridView1.Rows
-                    row.DefaultCellStyle.BackColor = Color.Empty
-                    row.DefaultCellStyle.ForeColor = Color.Empty
-                Next
-
-                ' Apply conditional formatting at the cell level
-                For Each row As DataGridViewRow In WIP_Form.DataGridView1.Rows
-                    For Each cell As DataGridViewCell In row.Cells
-                        Dim cellValue As Decimal
-                        ' Check if the cell value is numeric and negative
-                        If Decimal.TryParse(cell.Value?.ToString(), cellValue) AndAlso cellValue < 0 Then
-                            cell.Style.BackColor = Color.Red
-                            cell.Style.ForeColor = Color.White
-                        Else
-                            ' Reset to default style for non-negative or non-numeric values
-                            cell.Style.BackColor = Color.Empty
-                            cell.Style.ForeColor = Color.Empty
-                        End If
+                    ' Header and cell formatting
+                    For Each column As DataGridViewColumn In .Columns
+                        column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 11, FontStyle.Bold)
+                        column.HeaderCell.Style.ForeColor = Color.White
+                        column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                        column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                        column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 10)
+                        column.DefaultCellStyle.Format = "N0"
                     Next
-                Next
 
-                ' Style the DataGridView
-                WIP_Form.DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
-                WIP_Form.DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
-                WIP_Form.DataGridView1.EnableHeadersVisualStyles = False
-                WIP_Form.DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+                    ' Rename column headers (display names)
+                    .Columns("Product").HeaderText = "Product Name"
+                    .Columns("VIB_OUT").HeaderText = "Vibrator"
+                    .Columns("VibratorTarget").HeaderText = "Vibrator Target"
+                    .Columns("LW_OUT").HeaderText = "Load and Wash"
+                    .Columns("ANN_OUT").HeaderText = "Annealing"
+                    .Columns("SPUT_OUT").HeaderText = "Sput"
+                    .Columns("Target_WIP").HeaderText = "Sput Target"
+
+                    ' Theme styles
+                    .DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+                    .DefaultCellStyle.SelectionForeColor = Color.White
+                    .EnableHeadersVisualStyles = False
+                    .ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+                    .ClearSelection()
+                    .Refresh()
+                End With
 
             Catch ex As Exception
-                ' Handle any exceptions
                 MessageBox.Show("Error: " & ex.Message, "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Finally
-                ' Always close the connection
                 ConClose()
             End Try
         Else
             MessageBox.Show("Database connection failed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End If
-
     End Sub
+
+    Private Sub FormatWIPRows(sender As Object, e As DataGridViewBindingCompleteEventArgs)
+        Dim dgv = DirectCast(sender, DataGridView)
+
+        For Each row As DataGridViewRow In dgv.Rows
+            If row.IsNewRow Then Continue For
+
+            Dim vibOut = ToDecimalSafe(row.Cells("VIB_OUT").Value)
+            Dim vibTarget = ToDecimalSafe(row.Cells("VibratorTarget").Value)
+            Dim lwOut = ToDecimalSafe(row.Cells("LW_OUT").Value)
+            Dim annOut = ToDecimalSafe(row.Cells("ANN_OUT").Value)
+            Dim sputOut = ToDecimalSafe(row.Cells("SPUT_OUT").Value)
+            Dim targetWIP = ToDecimalSafe(row.Cells("Target_WIP").Value)
+
+            If vibOut < vibTarget Then
+                row.Cells("VIB_OUT").Style.BackColor = Color.Red
+                row.Cells("VIB_OUT").Style.ForeColor = Color.White
+            End If
+            If lwOut < targetWIP Then
+                row.Cells("LW_OUT").Style.BackColor = Color.Red
+                row.Cells("LW_OUT").Style.ForeColor = Color.White
+            End If
+            If annOut < targetWIP Then
+                row.Cells("ANN_OUT").Style.BackColor = Color.Red
+                row.Cells("ANN_OUT").Style.ForeColor = Color.White
+            End If
+            If sputOut < targetWIP Then
+                row.Cells("SPUT_OUT").Style.BackColor = Color.Red
+                row.Cells("SPUT_OUT").Style.ForeColor = Color.White
+            End If
+        Next
+    End Sub
+
+
 
 
     'Sub Load_Avail_WIP()
@@ -2286,7 +2425,7 @@ Module Query_Module
         If Dbconnection.State = ConnectionState.Open Then
             Try
                 command.Connection = Dbconnection
-                command.CommandText = "SELECT Product, MAX(Target_WIP) AS Target_WIP " &
+                command.CommandText = "SELECT Product, FORMAT(MAX(Target_WIP), 'N0') AS Target_WIP " &
                               "FROM WIPM_Process_tb GROUP BY Product"
 
                 Using rdr As SqlDataReader = command.ExecuteReader()
@@ -2497,6 +2636,229 @@ Module Query_Module
     End Sub
 
 
+    '=========================== < FOR UpdateVib_Form > =============================
+
+
+    Sub UpdateVib_Load()
+        Dim command As New SqlCommand("", Dbconnection)
+        Dim table As New DataTable
+
+        ConOpen()
+
+        If Dbconnection.State = ConnectionState.Open Then
+            Try
+                command.Connection = Dbconnection
+                command.CommandText = "SELECT Product, FORMAT(MAX(VibratorTarget), 'N0') AS VibratorTarget " &
+                          "FROM WIPM_Process_tb GROUP BY Product"
+
+                Using rdr As SqlDataReader = command.ExecuteReader()
+                    table.Load(rdr)
+                End Using
+
+                ' After binding the DataTable to the DataGridView
+                UpdateVib_Form.DataGridView1.DataSource = table
+
+                ' Format DataGridView columns
+                For Each column As DataGridViewColumn In UpdateVib_Form.DataGridView1.Columns
+                    column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 11, FontStyle.Bold)
+                    column.HeaderCell.Style.ForeColor = Color.White
+                    column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                    column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                    column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 10)
+                Next
+
+                ' Rename column headers for clarity
+                'UpdateVib_Form.DataGridView1.Columns("Product").ReadOnly = True
+                UpdateVib_Form.DataGridView1.Columns("Product").HeaderText = "Product Name"
+
+                'UpdateVib_Form.DataGridView1.Columns("VibratorTarget").ReadOnly = False
+                UpdateVib_Form.DataGridView1.Columns("VibratorTarget").HeaderText = "Target"
+
+                ' Clear row styles to prevent conflicts
+                For Each row As DataGridViewRow In UpdateVib_Form.DataGridView1.Rows
+                    row.DefaultCellStyle.BackColor = Color.Empty
+                    row.DefaultCellStyle.ForeColor = Color.Empty
+                Next
+
+                ' Apply conditional formatting at the cell level
+                For Each row As DataGridViewRow In UpdateVib_Form.DataGridView1.Rows
+                    For Each cell As DataGridViewCell In row.Cells
+                        Dim cellValue As Decimal
+                        ' Check if the cell value is numeric and negative
+                        If Decimal.TryParse(cell.Value?.ToString(), cellValue) AndAlso cellValue < 0 Then
+                            cell.Style.BackColor = Color.Red
+                            cell.Style.ForeColor = Color.White
+                        Else
+                            ' Reset to default style for non-negative or non-numeric values
+                            cell.Style.BackColor = Color.Empty
+                            cell.Style.ForeColor = Color.Empty
+                        End If
+                    Next
+                Next
+
+                ' Style the DataGridView
+                UpdateVib_Form.DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+                UpdateVib_Form.DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+                UpdateVib_Form.DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
+                UpdateVib_Form.DataGridView1.EnableHeadersVisualStyles = False
+                UpdateVib_Form.DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+            Catch ex As Exception
+                ' Handle any exceptions
+                MessageBox.Show("Error: " & ex.Message, "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Finally
+                ' Always close the connection
+                ConClose()
+            End Try
+        Else
+            MessageBox.Show("Database connection failed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End If
+
+    End Sub
+
+    Sub UpdateVib_Populate()
+        Try
+            Dim mydata As String
+            Dim command As New SqlCommand
+            Dim data As New DataTable
+            Dim adap As New SqlDataAdapter
+            Dim val As String
+
+            ConOpen()
+
+            val = UpdateVib_Form.DataGridView1.SelectedCells.Item(0).Value.ToString()
+
+            mydata = "SELECT Product, SUM(SAM_Out) AS SAM_OUT
+                      From WIPM_Process_tb
+                      WHERE Product = '" & val & "' GROUP BY Product"
+
+            command.Connection = Dbconnection
+            command.CommandText = mydata
+            adap.SelectCommand = command
+
+            adap.Fill(data)
+
+            If data.Rows.Count > 0 Then
+
+                UpdateVib_Form.lblProdName.Text = data.Rows(0).Item("Product").ToString
+                SAM_tOUT = CInt(data.Rows(0).Item("SAM_OUT").ToString)
+
+                Console.WriteLine(SAM_tOUT)
+
+            End If
+        Catch ex As Exception
+
+        Finally
+            ConClose()
+        End Try
+    End Sub
+
+    Sub UpdateVib_Update_Target()
+
+        Try
+
+            Dim Prod As String = UpdateVib_Form.lblProdName.Text
+            Dim Target As String = CInt(UpdateVib_Form.txtTarget.Text)
+
+            Dim T_GAP As Integer = SAM_tOUT - Target
+
+
+            Dim query As String = "UPDATE WIPM_Process_tb 
+                               SET VibratorTarget = @Trgt, GAP = @gap 
+                               WHERE Product = @product"
+
+            Using command As New SqlCommand(query, Dbconnection)
+                command.Parameters.AddWithValue("@Trgt", Target)
+                command.Parameters.AddWithValue("@gap", T_GAP)
+                command.Parameters.AddWithValue("@product", Prod)
+
+                ConOpen()
+                command.ExecuteNonQuery()
+
+                ConClose()
+            End Using
+
+            MsgBox("Target WIP for " & UpdateVib_Form.lblProdName.Text & " is updated!")
+            UpdateVib_Form.txtTarget.Clear()
+
+        Catch ex As Exception
+            MsgBox(ex.Message, vbCritical)
+        End Try
+    End Sub
+
+    'Sub UpdateAll()
+
+    '    ConOpen()
+
+    '    For Each row As DataGridViewRow In UpdateVib_Form.DataGridView1.Rows
+    '        ' Ensure the row is not a new row
+    '        If Not row.IsNewRow Then
+    '            ' Extract the values from the DataGridView
+    '            Dim product As String = row.Cells("Product").Value.ToString()
+    '            Dim targetWIP As String = row.Cells("VibratorTarget").Value.ToString()
+
+    '            ' Define the UPDATE query
+    '            Dim query As String = "UPDATE WIPM_Process_tb SET VibratorTarget = @TargetWIP WHERE Product = @Product"
+
+    '            ' Create an SqlCommand and add parameters
+    '            Using command As New SqlCommand(query, Dbconnection)
+    '                command.Parameters.AddWithValue("@TargetWIP", targetWIP)
+    '                command.Parameters.AddWithValue("@Product", product)
+
+    '                ' Execute the command
+    '                Try
+    '                    command.ExecuteNonQuery()
+    '                Catch ex As Exception
+    '                    MessageBox.Show($"Error updating Product '{product}': {ex.Message}")
+    '                End Try
+    '            End Using
+    '        End If
+    '    Next
+    '    ConClose()
+    '    MessageBox.Show("Target WIP is now updated.")
+    'End Sub
+
+    Sub UpdateAll_Vib()
+        If UpdateVib_Form.DataGridView1.DataSource Is Nothing Then
+            MessageBox.Show("No data available to update.", "Update Failed", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Exit Sub
+        End If
+
+        ConOpen()
+
+        If Dbconnection.State = ConnectionState.Open Then
+            Try
+                For Each row As DataGridViewRow In UpdateVib_Form.DataGridView1.Rows
+                    If Not row.IsNewRow Then
+                        Dim id As Integer
+                        Dim targetWIPValue As Decimal
+
+                        ' Get ID and VibratorTarget safely
+                        If Integer.TryParse(row.Cells("ID").Value?.ToString(), id) AndAlso
+                   Decimal.TryParse(row.Cells("VibratorTarget").Value?.ToString(), targetWIPValue) Then
+
+                            Using cmd As New SqlCommand("UPDATE WIPM_Process_tb SET VibratorTarget = @TargetWIP WHERE ID = @ID", Dbconnection)
+                                cmd.Parameters.AddWithValue("@TargetWIP", targetWIPValue)
+                                cmd.Parameters.AddWithValue("@ID", id)
+                                cmd.ExecuteNonQuery()
+                            End Using
+                        End If
+                    End If
+                Next
+
+                MessageBox.Show("All records successfully updated!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+            Catch ex As Exception
+                MessageBox.Show("Error updating records: " & ex.Message, "Update Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Finally
+                ConClose()
+            End Try
+        Else
+            MessageBox.Show("Database connection failed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End If
+    End Sub
+
+
     '============================= < FOR WIP AUTO FETCH DATA > ============================
 
     Sub Insert_PUNCHPRESS()
@@ -2545,7 +2907,7 @@ Module Query_Module
             ' STEP 3: Prepare one command for inserting
             Dim insertQuery As String = "
             INSERT INTO WIPM_Data_tb 
-            (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode) 
+            (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode) 
             VALUES (@NMR, @ProductionLotNumber, @EQPDescription, @TrackOutTime, @ReedType, @Qty, @Description, @LotCode)"
             Dim insertCmd As New SqlCommand(insertQuery, Dbconnection)
 
@@ -2635,7 +2997,7 @@ Module Query_Module
             ' STEP 3: Prepare one command for inserting
             Dim insertQuery As String = "
             INSERT INTO WIPM_Data_tb 
-            (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode) 
+            (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode) 
             VALUES (@NMR, @ProductionLotNumber, @EQPDescription, @TrackOutTime, @ReedType, @Qty, @Description, @LotCode)"
             Dim insertCmd As New SqlCommand(insertQuery, Dbconnection)
 
@@ -2724,7 +3086,7 @@ Module Query_Module
             ' STEP 3: Prepare one command for inserting
             Dim insertQuery As String = "
             INSERT INTO WIPM_Data_tb 
-            (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode) 
+            (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode) 
             VALUES (@NMR, @ProductionLotNumber, @EQPDescription, @TrackOutTime, @ReedType, @Qty, @Description, @LotCode)"
             Dim insertCmd As New SqlCommand(insertQuery, Dbconnection)
 
@@ -2814,7 +3176,7 @@ Module Query_Module
             ' STEP 3: Prepare one command for inserting
             Dim insertQuery As String = "
             INSERT INTO WIPM_Data_tb 
-            (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode) 
+            (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode) 
             VALUES (@NMR, @ProductionLotNumber, @EQPDescription, @TrackOutTime, @ReedType, @Qty, @Description, @LotCode)"
             Dim insertCmd As New SqlCommand(insertQuery, Dbconnection)
 
@@ -2903,7 +3265,7 @@ Module Query_Module
             ' STEP 3: Prepare one command for inserting
             Dim insertQuery As String = "
         INSERT INTO WIPM_Data_tb 
-        (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode) 
+        (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode) 
         VALUES (@NMR, @ProductionLotNumber, @EQPDescription, @TrackOutTime, @ReedType, @Qty, @Description, @LotCode)"
             Dim insertCmd As New SqlCommand(insertQuery, Dbconnection)
 
@@ -2993,7 +3355,7 @@ Module Query_Module
             ' STEP 3: Prepare one command for inserting
             Dim insertQuery As String = "
         INSERT INTO WIPM_Data_tb 
-        (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode) 
+        (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode) 
         VALUES (@NMR, @ProductionLotNumber, @EQPDescription, @TrackOutTime, @ReedType, @Qty, @Description, @LotCode)"
             Dim insertCmd As New SqlCommand(insertQuery, Dbconnection)
 
@@ -3082,7 +3444,7 @@ Module Query_Module
             ' STEP 3: Prepare one command for inserting
             Dim insertQuery As String = "
         INSERT INTO WIPM_Data_tb 
-        (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode) 
+        (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode) 
         VALUES (@NMR, @ProductionLotNumber, @EQPDescription, @TrackOutTime, @ReedType, @Qty, @Description, @LotCode)"
             Dim insertCmd As New SqlCommand(insertQuery, Dbconnection)
 
@@ -3172,7 +3534,7 @@ Module Query_Module
             ' STEP 3: Prepare one command for inserting
             Dim insertQuery As String = "
         INSERT INTO WIPM_Data_tb 
-        (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode) 
+        (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode) 
         VALUES (@NMR, @ProductionLotNumber, @EQPDescription, @TrackOutTime, @ReedType, @Qty, @Description, @LotCode)"
             Dim insertCmd As New SqlCommand(insertQuery, Dbconnection)
 
@@ -3261,7 +3623,7 @@ Module Query_Module
             ' STEP 3: Prepare one command for inserting
             Dim insertQuery As String = "
         INSERT INTO WIPM_Data_tb 
-        (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode) 
+        (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode) 
         VALUES (@NMR, @ProductionLotNumber, @EQPDescription, @TrackOutTime, @ReedType, @Qty, @Description, @LotCode)"
             Dim insertCmd As New SqlCommand(insertQuery, Dbconnection)
 
@@ -3351,7 +3713,7 @@ Module Query_Module
             ' STEP 3: Prepare one command for inserting
             Dim insertQuery As String = "
         INSERT INTO WIPM_Data_tb 
-        (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode) 
+        (NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode) 
         VALUES (@NMR, @ProductionLotNumber, @EQPDescription, @TrackOutTime, @ReedType, @Qty, @Description, @LotCode)"
             Dim insertCmd As New SqlCommand(insertQuery, Dbconnection)
 
@@ -3404,10 +3766,10 @@ Module Query_Module
 
         If Dbconnection.State = ConnectionState.Open Then
             command.Connection = Dbconnection
-            'command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+            'command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
             '                     FROM WIPM_Data_tb WHERE EQPDescription Like '%PUNCHPRESS%' Order by TrackOutTime ASC"
 
-            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
                                  FROM WIPM_Data_tb AS main WHERE EQPDescription Like '%PUNCHPRESS%' AND NOT EXISTS (
                                 SELECT 1
                                 FROM WIPM_Data_tb AS sub
@@ -3476,7 +3838,7 @@ Module Query_Module
             command.Connection = Dbconnection
 
             ' Updated SQL with UPPER() to ensure case-insensitive comparison
-            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode
                                     FROM WIPM_Data_tb AS main
                                     WHERE EQPDescription LIKE '%PUNCHPRESS%'
                                       AND UPPER(ProductionLotNumber) = UPPER(@Search)
@@ -3535,14 +3897,14 @@ Module Query_Module
             Dim query As String
 
             If PunchPress_Form.txtSearch.Text = "" Or PunchPress_Form.txtSearch.Text = "Search lot number" Then
-                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
                                  FROM WIPM_Data_tb AS main WHERE EQPDescription Like '%PUNCHPRESS%' AND NOT EXISTS (
                                 SELECT 1
                                 FROM WIPM_Data_tb AS sub
                                 WHERE sub.ProductionLotNumber = main.ProductionLotNumber 
                                 AND sub.EQPDescription like '%DEBUR%') Order by TrackOutTime ASC"
             Else
-                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode
                                  FROM WIPM_Data_tb AS main
                                  WHERE EQPDescription LIKE '%PUNCHPRESS%' 
                                  AND UPPER(ProductionLotNumber) LIKE UPPER(@Search) 
@@ -3675,10 +4037,10 @@ Module Query_Module
 
         If Dbconnection.State = ConnectionState.Open Then
             command.Connection = Dbconnection
-            'command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+            'command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
             '                        FROM WIPM_Data_tb WHERE EQPDescription Like '%DEBUR%' Order by TrackOutTime ASC"
 
-            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
                                  FROM WIPM_Data_tb AS main WHERE EQPDescription Like '%DEBUR%' AND NOT EXISTS (
                                 SELECT 1
                                 FROM WIPM_Data_tb AS sub
@@ -3744,11 +4106,11 @@ Module Query_Module
 
         If Dbconnection.State = ConnectionState.Open Then
             command.Connection = Dbconnection
-            'command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+            'command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
             '           FROM WIPM_Data_tb 
             '           WHERE EQPDescription LIKE '%DEBUR%' AND ProductionLotNumber = @Search Order by TrackOutTime ASC"
 
-            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode
                                     FROM WIPM_Data_tb AS main
                                     WHERE EQPDescription LIKE '%DEBUR%'
                                       AND UPPER(ProductionLotNumber) = UPPER(@Search)
@@ -3819,21 +4181,21 @@ Module Query_Module
             Dim query As String
 
             If Vibrator_Form.txtSearch.Text = "" Or Vibrator_Form.txtSearch.Text = "Search lot number" Then
-                'query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                'query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
                 '                 FROM WIPM_Data_tb WHERE EQPDescription Like '%DEBUR%' Order by TrackOutTime ASC"
 
-                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
                                  FROM WIPM_Data_tb AS main WHERE EQPDescription Like '%DEBUR%' AND NOT EXISTS (
                                 SELECT 1
                                 FROM WIPM_Data_tb AS sub
                                 WHERE sub.ProductionLotNumber = main.ProductionLotNumber 
                                 AND sub.EQPDescription like '%RAMCO%') Order by TrackOutTime ASC"
             Else
-                'query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                'query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
                 '       FROM WIPM_Data_tb 
                 '       WHERE EQPDescription LIKE '%DEBUR%' AND ProductionLotNumber LIKE @Search Order by TrackOutTime ASC"
 
-                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode
                                  FROM WIPM_Data_tb AS main
                                  WHERE EQPDescription LIKE '%DEBUR%' 
                                  AND UPPER(ProductionLotNumber) LIKE UPPER(@Search) 
@@ -3966,10 +4328,10 @@ Module Query_Module
 
         If Dbconnection.State = ConnectionState.Open Then
             command.Connection = Dbconnection
-            'command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+            'command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
             '                        FROM WIPM_Data_tb WHERE EQPDescription Like '%RAMCO%' Order by TrackOutTime ASC"
 
-            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
                                  FROM WIPM_Data_tb AS main WHERE EQPDescription Like '%RAMCO%' AND NOT EXISTS (
                                 SELECT 1
                                 FROM WIPM_Data_tb AS sub
@@ -4036,11 +4398,11 @@ Module Query_Module
 
         If Dbconnection.State = ConnectionState.Open Then
             command.Connection = Dbconnection
-            'command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+            'command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
             '           FROM WIPM_Data_tb 
             '           WHERE EQPDescription LIKE '%RAMCO%' AND ProductionLotNumber = @Search Order by TrackOutTime ASC"
 
-            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode
                                     FROM WIPM_Data_tb AS main
                                     WHERE EQPDescription LIKE '%RAMCO%'
                                       AND UPPER(ProductionLotNumber) = UPPER(@Search)
@@ -4111,14 +4473,14 @@ Module Query_Module
             Dim query As String
 
             If LoadWash_Form.txtSearch.Text = "" Or LoadWash_Form.txtSearch.Text = "Search lot number" Then
-                '    query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                '    query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
                 '                     FROM WIPM_Data_tb WHERE EQPDescription Like '%RAMCO%' Order by TrackOutTime ASC"
                 'Else
-                '    query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                '    query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
                 '           FROM WIPM_Data_tb 
                 '           WHERE EQPDescription LIKE '%RAMCO%' AND ProductionLotNumber LIKE @Search Order by TrackOutTime ASC"
 
-                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
                                  FROM WIPM_Data_tb AS main WHERE EQPDescription Like '%RAMCO%' AND NOT EXISTS (
                                 SELECT 1
                                 FROM WIPM_Data_tb AS sub
@@ -4126,7 +4488,7 @@ Module Query_Module
                                 AND sub.EQPDescription like '%ANNEAL%') Order by TrackOutTime ASC"
             Else
 
-                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode
                                  FROM WIPM_Data_tb AS main
                                  WHERE EQPDescription LIKE '%RAMCO%' 
                                  AND UPPER(ProductionLotNumber) LIKE UPPER(@Search) 
@@ -4258,10 +4620,10 @@ Module Query_Module
 
         If Dbconnection.State = ConnectionState.Open Then
             command.Connection = Dbconnection
-            'command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+            'command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
             '                        FROM WIPM_Data_tb WHERE EQPDescription Like '%ANNEAL%' Order by TrackOutTime ASC"
 
-            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
                                  FROM WIPM_Data_tb AS main WHERE EQPDescription Like '%ANNEAL%' AND NOT EXISTS (
                                 SELECT 1
                                 FROM WIPM_Data_tb AS sub
@@ -4327,11 +4689,11 @@ Module Query_Module
 
         If Dbconnection.State = ConnectionState.Open Then
             command.Connection = Dbconnection
-            'command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+            'command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
             '           FROM WIPM_Data_tb 
             '           WHERE EQPDescription LIKE '%ANNEAL%' AND ProductionLotNumber = @Search Order by TrackOutTime ASC"
 
-            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode
                                     FROM WIPM_Data_tb AS main
                                     WHERE EQPDescription LIKE '%ANNEAL%'
                                       AND UPPER(ProductionLotNumber) = UPPER(@Search)
@@ -4402,14 +4764,14 @@ Module Query_Module
             Dim query As String
 
             If Anneal_Form.txtSearch.Text = "" Or Anneal_Form.txtSearch.Text = "Search lot number" Then
-                '    query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                '    query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
                 '                     FROM WIPM_Data_tb WHERE EQPDescription Like '%ANNEAL%' Order by TrackOutTime ASC"
                 'Else
-                '    query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                '    query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
                 '           FROM WIPM_Data_tb 
                 '           WHERE EQPDescription LIKE '%ANNEAL%' AND ProductionLotNumber LIKE @Search Order by TrackOutTime ASC"
 
-                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
                                  FROM WIPM_Data_tb AS main WHERE EQPDescription Like '%ANNEAL%' AND NOT EXISTS (
                                 SELECT 1
                                 FROM WIPM_Data_tb AS sub
@@ -4417,7 +4779,7 @@ Module Query_Module
                                 AND sub.EQPDescription like '%SPUT%') Order by TrackOutTime ASC"
             Else
 
-                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode
                                  FROM WIPM_Data_tb AS main
                                  WHERE EQPDescription LIKE '%ANNEAL%' 
                                  AND UPPER(ProductionLotNumber) LIKE UPPER(@Search) 
@@ -4550,7 +4912,7 @@ Module Query_Module
 
         If Dbconnection.State = ConnectionState.Open Then
             command.Connection = Dbconnection
-            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
                                     FROM WIPM_Data_tb WHERE EQPDescription Like '%SPUT%' Order by TrackOutTime ASC"
 
             Dim rdr As SqlDataReader = command.ExecuteReader
@@ -4612,7 +4974,7 @@ Module Query_Module
 
         If Dbconnection.State = ConnectionState.Open Then
             command.Connection = Dbconnection
-            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+            command.CommandText = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
                        FROM WIPM_Data_tb 
                        WHERE EQPDescription LIKE '%SPUT%' AND ProductionLotNumber = @Search Order by TrackOutTime ASC"
 
@@ -4676,10 +5038,10 @@ Module Query_Module
             Dim query As String
 
             If Sput_Form.txtSearch.Text = "" Or Sput_Form.txtSearch.Text = "Search lot number" Then
-                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
                                  FROM WIPM_Data_tb WHERE EQPDescription Like '%SPUT%' Order by TrackOutTime ASC"
             Else
-                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, Qty, Description, LotCode 
+                query = "SELECT NMR, ProductionLotNumber, EQPDescription, TrackOutTime, ReedType, FORMAT(Qty, 'N0') as Qty, Description, LotCode 
                        FROM WIPM_Data_tb 
                        WHERE EQPDescription LIKE '%SPUT%' AND ProductionLotNumber LIKE @Search Order by TrackOutTime ASC"
 
