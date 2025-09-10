@@ -1,8 +1,15 @@
 ﻿Public Class PassSettings_Form
     Private Sub btnOkay_Click(sender As Object, e As EventArgs) Handles btnOkay.Click
         If txtPass.Text = "rswipmaster" Then
-            Settings_Form.ShowDialog()
-            Me.Close()
+            Select Case Form1.Setting_ID
+                Case 1
+                    Settings_Form.ShowDialog()
+                    Me.Close()
+                Case 2
+                    Load_AddDelete()
+                    Me.Close()
+            End Select
+
         Else
             MsgBox("Wrong password!", MsgBoxStyle.Critical)
             txtPass.Text = ""
@@ -12,8 +19,16 @@
     Private Sub txtPass_KeyUp(sender As Object, e As KeyEventArgs) Handles txtPass.KeyUp
         If e.KeyCode = Keys.Enter Then
             If txtPass.Text = "rswipmaster" Then
-                Settings_Form.ShowDialog()
-                Me.Close()
+
+                Select Case Form1.Setting_ID
+                    Case 1
+                        Settings_Form.ShowDialog()
+                        Me.Close()
+                    Case 2
+                        Load_AddDelete()
+                        Me.Close()
+                End Select
+
             Else
                 MsgBox("Wrong password!", MsgBoxStyle.Critical)
                 txtPass.Text = ""

@@ -22,9 +22,15 @@ Partial Class WIP_Form
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
+        Me.components = New System.ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(WIP_Form))
+        Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Me.Guna2CustomGradientPanel1 = New Guna.UI2.WinForms.Guna2CustomGradientPanel()
         Me.GroupBoxTitle = New Guna.UI2.WinForms.Guna2GroupBox()
+        Me.Label1 = New System.Windows.Forms.Label()
+        Me.Guna2PictureBox1 = New Guna.UI2.WinForms.Guna2PictureBox()
+        Me.Guna2GroupBox1 = New Guna.UI2.WinForms.Guna2GroupBox()
+        Me.lblVibAnn = New System.Windows.Forms.Label()
         Me.btnTrial = New System.Windows.Forms.Button()
         Me.DataGridView1 = New System.Windows.Forms.DataGridView()
         Me.btnUpdate = New Guna.UI2.WinForms.Guna2Button()
@@ -40,8 +46,11 @@ Partial Class WIP_Form
         Me.txtTarget = New Guna.UI2.WinForms.Guna2TextBox()
         Me.Label2 = New System.Windows.Forms.Label()
         Me.lblTitle = New System.Windows.Forms.Label()
+        Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
         Me.Guna2CustomGradientPanel1.SuspendLayout()
         Me.GroupBoxTitle.SuspendLayout()
+        CType(Me.Guna2PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.Guna2GroupBox1.SuspendLayout()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
@@ -68,6 +77,9 @@ Partial Class WIP_Form
         Me.GroupBoxTitle.BorderColor = System.Drawing.Color.Black
         Me.GroupBoxTitle.BorderRadius = 10
         Me.GroupBoxTitle.BorderThickness = 5
+        Me.GroupBoxTitle.Controls.Add(Me.Label1)
+        Me.GroupBoxTitle.Controls.Add(Me.Guna2PictureBox1)
+        Me.GroupBoxTitle.Controls.Add(Me.Guna2GroupBox1)
         Me.GroupBoxTitle.Controls.Add(Me.btnTrial)
         Me.GroupBoxTitle.Controls.Add(Me.DataGridView1)
         Me.GroupBoxTitle.Controls.Add(Me.btnUpdate)
@@ -86,7 +98,7 @@ Partial Class WIP_Form
         Me.GroupBoxTitle.CustomBorderColor = System.Drawing.Color.Transparent
         Me.GroupBoxTitle.FillColor = System.Drawing.Color.WhiteSmoke
         Me.GroupBoxTitle.Font = New System.Drawing.Font("Segoe UI", 15.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.GroupBoxTitle.ForeColor = System.Drawing.Color.FromArgb(CType(CType(15, Byte), Integer), CType(CType(104, Byte), Integer), CType(CType(169, Byte), Integer))
+        Me.GroupBoxTitle.ForeColor = System.Drawing.Color.Black
         Me.GroupBoxTitle.Location = New System.Drawing.Point(29, 30)
         Me.GroupBoxTitle.Name = "GroupBoxTitle"
         Me.GroupBoxTitle.Size = New System.Drawing.Size(841, 589)
@@ -94,10 +106,70 @@ Partial Class WIP_Form
         Me.GroupBoxTitle.Text = "AVAILABLE WIP IN LINE"
         Me.GroupBoxTitle.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
         '
+        'Label1
+        '
+        Me.Label1.AutoSize = True
+        Me.Label1.BackColor = System.Drawing.Color.Transparent
+        Me.Label1.Font = New System.Drawing.Font("Impact", 11.25!, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label1.ForeColor = System.Drawing.Color.FromArgb(CType(CType(15, Byte), Integer), CType(CType(104, Byte), Integer), CType(CType(169, Byte), Integer))
+        Me.Label1.Location = New System.Drawing.Point(28, 97)
+        Me.Label1.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
+        Me.Label1.Name = "Label1"
+        Me.Label1.Size = New System.Drawing.Size(41, 19)
+        Me.Label1.TabIndex = 152
+        Me.Label1.Text = "Note:"
+        '
+        'Guna2PictureBox1
+        '
+        Me.Guna2PictureBox1.FillColor = System.Drawing.Color.Transparent
+        Me.Guna2PictureBox1.Image = CType(resources.GetObject("Guna2PictureBox1.Image"), System.Drawing.Image)
+        Me.Guna2PictureBox1.ImageRotate = 0!
+        Me.Guna2PictureBox1.Location = New System.Drawing.Point(21, 46)
+        Me.Guna2PictureBox1.Name = "Guna2PictureBox1"
+        Me.Guna2PictureBox1.Size = New System.Drawing.Size(53, 57)
+        Me.Guna2PictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage
+        Me.Guna2PictureBox1.TabIndex = 151
+        Me.Guna2PictureBox1.TabStop = False
+        '
+        'Guna2GroupBox1
+        '
+        Me.Guna2GroupBox1.BackColor = System.Drawing.Color.Transparent
+        Me.Guna2GroupBox1.BorderColor = System.Drawing.Color.FromArgb(CType(CType(15, Byte), Integer), CType(CType(104, Byte), Integer), CType(CType(169, Byte), Integer))
+        Me.Guna2GroupBox1.BorderRadius = 10
+        Me.Guna2GroupBox1.BorderThickness = 5
+        Me.Guna2GroupBox1.Controls.Add(Me.lblVibAnn)
+        Me.Guna2GroupBox1.CustomBorderThickness = New System.Windows.Forms.Padding(0)
+        Me.Guna2GroupBox1.Font = New System.Drawing.Font("Segoe UI Semibold", 14.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Guna2GroupBox1.ForeColor = System.Drawing.Color.FromArgb(CType(CType(15, Byte), Integer), CType(CType(104, Byte), Integer), CType(CType(169, Byte), Integer))
+        Me.Guna2GroupBox1.Location = New System.Drawing.Point(80, 54)
+        Me.Guna2GroupBox1.Name = "Guna2GroupBox1"
+        Me.Guna2GroupBox1.ShadowDecoration.BorderRadius = 15
+        Me.Guna2GroupBox1.ShadowDecoration.Color = System.Drawing.Color.FromArgb(CType(CType(15, Byte), Integer), CType(CType(104, Byte), Integer), CType(CType(169, Byte), Integer))
+        Me.Guna2GroupBox1.ShadowDecoration.Depth = 10
+        Me.Guna2GroupBox1.ShadowDecoration.Enabled = True
+        Me.Guna2GroupBox1.ShadowDecoration.Shadow = New System.Windows.Forms.Padding(10)
+        Me.Guna2GroupBox1.Size = New System.Drawing.Size(362, 66)
+        Me.Guna2GroupBox1.TabIndex = 150
+        '
+        'lblVibAnn
+        '
+        Me.lblVibAnn.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.lblVibAnn.BackColor = System.Drawing.Color.Transparent
+        Me.lblVibAnn.Font = New System.Drawing.Font("Segoe UI Semibold", 11.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblVibAnn.ForeColor = System.Drawing.Color.FromArgb(CType(CType(15, Byte), Integer), CType(CType(104, Byte), Integer), CType(CType(169, Byte), Integer))
+        Me.lblVibAnn.Location = New System.Drawing.Point(12, 12)
+        Me.lblVibAnn.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
+        Me.lblVibAnn.Name = "lblVibAnn"
+        Me.lblVibAnn.Size = New System.Drawing.Size(337, 43)
+        Me.lblVibAnn.TabIndex = 151
+        Me.lblVibAnn.Text = "The total value of Vibrator and Anneal is calculated between 11:00 PM and 12:00 A" &
+    "M."
+        Me.lblVibAnn.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
         'btnTrial
         '
         Me.btnTrial.Font = New System.Drawing.Font("Segoe UI", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.btnTrial.Location = New System.Drawing.Point(101, 45)
+        Me.btnTrial.Location = New System.Drawing.Point(448, 43)
         Me.btnTrial.Name = "btnTrial"
         Me.btnTrial.Size = New System.Drawing.Size(81, 27)
         Me.btnTrial.TabIndex = 149
@@ -114,11 +186,20 @@ Partial Class WIP_Form
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.DataGridView1.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill
         Me.DataGridView1.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells
+        DataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle1.BackColor = System.Drawing.Color.Transparent
+        DataGridViewCellStyle1.Font = New System.Drawing.Font("Segoe UI", 15.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        DataGridViewCellStyle1.ForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.Transparent
+        DataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.DataGridView1.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
         Me.DataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        Me.DataGridView1.Location = New System.Drawing.Point(27, 87)
+        Me.DataGridView1.Location = New System.Drawing.Point(27, 138)
         Me.DataGridView1.Name = "DataGridView1"
         Me.DataGridView1.ReadOnly = True
-        Me.DataGridView1.Size = New System.Drawing.Size(785, 477)
+        Me.DataGridView1.RowHeadersVisible = False
+        Me.DataGridView1.Size = New System.Drawing.Size(785, 426)
         Me.DataGridView1.TabIndex = 0
         '
         'btnUpdate
@@ -198,7 +279,7 @@ Partial Class WIP_Form
         Me.Label5.BackColor = System.Drawing.Color.Transparent
         Me.Label5.Font = New System.Drawing.Font("Impact", 11.25!, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Label5.ForeColor = System.Drawing.Color.FromArgb(CType(CType(15, Byte), Integer), CType(CType(104, Byte), Integer), CType(CType(169, Byte), Integer))
-        Me.Label5.Location = New System.Drawing.Point(284, 52)
+        Me.Label5.Location = New System.Drawing.Point(546, 19)
         Me.Label5.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label5.Name = "Label5"
         Me.Label5.Size = New System.Drawing.Size(75, 19)
@@ -235,7 +316,7 @@ Partial Class WIP_Form
         Me.dtpStartDate.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Bold)
         Me.dtpStartDate.ForeColor = System.Drawing.Color.White
         Me.dtpStartDate.Format = System.Windows.Forms.DateTimePickerFormat.[Short]
-        Me.dtpStartDate.Location = New System.Drawing.Point(369, 43)
+        Me.dtpStartDate.Location = New System.Drawing.Point(631, 10)
         Me.dtpStartDate.MaxDate = New Date(9998, 12, 31, 0, 0, 0, 0)
         Me.dtpStartDate.MinDate = New Date(1753, 1, 1, 0, 0, 0, 0)
         Me.dtpStartDate.Name = "dtpStartDate"
@@ -258,7 +339,7 @@ Partial Class WIP_Form
         Me.btnClose.HoverState.Image = CType(resources.GetObject("resource.Image"), System.Drawing.Image)
         Me.btnClose.Image = CType(resources.GetObject("btnClose.Image"), System.Drawing.Image)
         Me.btnClose.ImageSize = New System.Drawing.Size(30, 30)
-        Me.btnClose.Location = New System.Drawing.Point(16, 19)
+        Me.btnClose.Location = New System.Drawing.Point(16, 9)
         Me.btnClose.Name = "btnClose"
         Me.btnClose.PressedColor = System.Drawing.Color.Transparent
         Me.btnClose.PressedDepth = 0
@@ -355,6 +436,10 @@ Partial Class WIP_Form
         Me.lblTitle.Text = "Target WIP"
         Me.lblTitle.Visible = False
         '
+        'Timer1
+        '
+        Me.Timer1.Interval = 5000
+        '
         'WIP_Form
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -369,6 +454,8 @@ Partial Class WIP_Form
         Me.Guna2CustomGradientPanel1.ResumeLayout(False)
         Me.GroupBoxTitle.ResumeLayout(False)
         Me.GroupBoxTitle.PerformLayout()
+        CType(Me.Guna2PictureBox1, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.Guna2GroupBox1.ResumeLayout(False)
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
@@ -391,4 +478,9 @@ Partial Class WIP_Form
     Friend WithEvents btnViewAll As Guna.UI2.WinForms.Guna2Button
     Friend WithEvents btnUpdate As Guna.UI2.WinForms.Guna2Button
     Friend WithEvents btnTrial As Button
+    Friend WithEvents Timer1 As Timer
+    Friend WithEvents Guna2GroupBox1 As Guna.UI2.WinForms.Guna2GroupBox
+    Friend WithEvents lblVibAnn As Label
+    Friend WithEvents Label1 As Label
+    Friend WithEvents Guna2PictureBox1 As Guna.UI2.WinForms.Guna2PictureBox
 End Class

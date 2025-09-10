@@ -1,6 +1,8 @@
 ﻿Public Class UpdateWIP_Form
     Private Sub UpdateWIP_Form_Load(sender As Object, e As EventArgs) Handles Me.Load
-        UpdateWIP_Load()
+        'UpdateWIP_Load()
+
+        UpdateSAM_Load()
     End Sub
 
     Private Sub btnClose_Click(sender As Object, e As EventArgs) Handles btnClose.Click
@@ -8,11 +10,13 @@
     End Sub
 
     Private Sub DataGridView1_CellClick(sender As Object, e As DataGridViewCellEventArgs) Handles DataGridView1.CellClick
-        UpdateWIP_Populate()
+        'UpdateWIP_Populate()
+        UpdateSAM_Populate()
     End Sub
 
     Private Sub DataGridView1_CellStateChanged(sender As Object, e As DataGridViewCellStateChangedEventArgs) Handles DataGridView1.CellStateChanged
-        UpdateWIP_Populate()
+        'UpdateWIP_Populate()
+        UpdateSAM_Populate()
     End Sub
 
     Private Sub txtTarget_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtTarget.KeyPress
@@ -31,9 +35,12 @@
         If txtTarget.Text = "" Then
             MsgBox("Please enter the new target quantity!", MsgBoxStyle.Critical)
         Else
-            'PassWIP_Form.ShowDialog()
-            UpdateWIP_Update_Target()
-            UpdateWIP_Load()
+            ''PassWIP_Form.ShowDialog()
+            'UpdateWIP_Update_Target()
+            'UpdateWIP_Load()
+
+            UpdateSAM_Update_Target()
+            UpdateSAM_Load()
         End If
     End Sub
 End Class

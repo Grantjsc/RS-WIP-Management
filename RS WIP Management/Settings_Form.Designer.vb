@@ -72,7 +72,7 @@ Partial Class Settings_Form
         Me.Guna2CustomGradientPanel1.FillColor4 = System.Drawing.Color.FromArgb(CType(CType(15, Byte), Integer), CType(CType(104, Byte), Integer), CType(CType(169, Byte), Integer))
         Me.Guna2CustomGradientPanel1.Location = New System.Drawing.Point(0, 0)
         Me.Guna2CustomGradientPanel1.Name = "Guna2CustomGradientPanel1"
-        Me.Guna2CustomGradientPanel1.Size = New System.Drawing.Size(418, 511)
+        Me.Guna2CustomGradientPanel1.Size = New System.Drawing.Size(418, 380)
         Me.Guna2CustomGradientPanel1.TabIndex = 2
         '
         'GroupBoxTitle
@@ -98,12 +98,13 @@ Partial Class Settings_Form
         Me.GroupBoxTitle.ForeColor = System.Drawing.Color.FromArgb(CType(CType(15, Byte), Integer), CType(CType(104, Byte), Integer), CType(CType(169, Byte), Integer))
         Me.GroupBoxTitle.Location = New System.Drawing.Point(29, 30)
         Me.GroupBoxTitle.Name = "GroupBoxTitle"
-        Me.GroupBoxTitle.Size = New System.Drawing.Size(359, 450)
+        Me.GroupBoxTitle.Size = New System.Drawing.Size(359, 308)
         Me.GroupBoxTitle.TabIndex = 2
         Me.GroupBoxTitle.Text = "Process"
         '
         'btnSave
         '
+        Me.btnSave.Anchor = System.Windows.Forms.AnchorStyles.Bottom
         Me.btnSave.BackColor = System.Drawing.Color.Transparent
         Me.btnSave.BorderColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(148, Byte), Integer), CType(CType(255, Byte), Integer))
         Me.btnSave.BorderRadius = 15
@@ -119,7 +120,7 @@ Partial Class Settings_Form
         Me.btnSave.HoverState.ForeColor = System.Drawing.Color.White
         Me.btnSave.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.btnSave.ImageSize = New System.Drawing.Size(45, 45)
-        Me.btnSave.Location = New System.Drawing.Point(129, 381)
+        Me.btnSave.Location = New System.Drawing.Point(129, 239)
         Me.btnSave.Name = "btnSave"
         Me.btnSave.ShadowDecoration.BorderRadius = 15
         Me.btnSave.ShadowDecoration.Color = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer), CType(CType(255, Byte), Integer))
@@ -137,7 +138,7 @@ Partial Class Settings_Form
         Me.CheckSAM.CheckedState.BorderThickness = 0
         Me.CheckSAM.CheckedState.FillColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(148, Byte), Integer), CType(CType(255, Byte), Integer))
         Me.CheckSAM.Font = New System.Drawing.Font("Segoe UI", 18.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CheckSAM.Location = New System.Drawing.Point(94, 327)
+        Me.CheckSAM.Location = New System.Drawing.Point(294, 180)
         Me.CheckSAM.Name = "CheckSAM"
         Me.CheckSAM.Size = New System.Drawing.Size(86, 36)
         Me.CheckSAM.TabIndex = 75
@@ -146,6 +147,7 @@ Partial Class Settings_Form
         Me.CheckSAM.UncheckedState.BorderRadius = 0
         Me.CheckSAM.UncheckedState.BorderThickness = 0
         Me.CheckSAM.UncheckedState.FillColor = System.Drawing.Color.FromArgb(CType(CType(125, Byte), Integer), CType(CType(137, Byte), Integer), CType(CType(149, Byte), Integer))
+        Me.CheckSAM.Visible = False
         '
         'CheckSput
         '
@@ -155,7 +157,7 @@ Partial Class Settings_Form
         Me.CheckSput.CheckedState.BorderThickness = 0
         Me.CheckSput.CheckedState.FillColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(148, Byte), Integer), CType(CType(255, Byte), Integer))
         Me.CheckSput.Font = New System.Drawing.Font("Segoe UI", 18.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CheckSput.Location = New System.Drawing.Point(94, 282)
+        Me.CheckSput.Location = New System.Drawing.Point(101, 169)
         Me.CheckSput.Name = "CheckSput"
         Me.CheckSput.Size = New System.Drawing.Size(85, 36)
         Me.CheckSput.TabIndex = 74
@@ -173,7 +175,7 @@ Partial Class Settings_Form
         Me.CheckWash.CheckedState.BorderThickness = 0
         Me.CheckWash.CheckedState.FillColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(148, Byte), Integer), CType(CType(255, Byte), Integer))
         Me.CheckWash.Font = New System.Drawing.Font("Segoe UI", 18.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CheckWash.Location = New System.Drawing.Point(94, 237)
+        Me.CheckWash.Location = New System.Drawing.Point(294, 148)
         Me.CheckWash.Name = "CheckWash"
         Me.CheckWash.Size = New System.Drawing.Size(94, 36)
         Me.CheckWash.TabIndex = 73
@@ -182,6 +184,7 @@ Partial Class Settings_Form
         Me.CheckWash.UncheckedState.BorderRadius = 0
         Me.CheckWash.UncheckedState.BorderThickness = 0
         Me.CheckWash.UncheckedState.FillColor = System.Drawing.Color.FromArgb(CType(CType(125, Byte), Integer), CType(CType(137, Byte), Integer), CType(CType(149, Byte), Integer))
+        Me.CheckWash.Visible = False
         '
         'CheckAnn
         '
@@ -191,7 +194,7 @@ Partial Class Settings_Form
         Me.CheckAnn.CheckedState.BorderThickness = 0
         Me.CheckAnn.CheckedState.FillColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(148, Byte), Integer), CType(CType(255, Byte), Integer))
         Me.CheckAnn.Font = New System.Drawing.Font("Segoe UI", 18.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CheckAnn.Location = New System.Drawing.Point(94, 192)
+        Me.CheckAnn.Location = New System.Drawing.Point(101, 114)
         Me.CheckAnn.Name = "CheckAnn"
         Me.CheckAnn.Size = New System.Drawing.Size(150, 36)
         Me.CheckAnn.TabIndex = 72
@@ -209,7 +212,7 @@ Partial Class Settings_Form
         Me.CheckLW.CheckedState.BorderThickness = 0
         Me.CheckLW.CheckedState.FillColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(148, Byte), Integer), CType(CType(255, Byte), Integer))
         Me.CheckLW.Font = New System.Drawing.Font("Segoe UI", 18.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CheckLW.Location = New System.Drawing.Point(94, 147)
+        Me.CheckLW.Location = New System.Drawing.Point(294, 120)
         Me.CheckLW.Name = "CheckLW"
         Me.CheckLW.Size = New System.Drawing.Size(206, 36)
         Me.CheckLW.TabIndex = 71
@@ -218,6 +221,7 @@ Partial Class Settings_Form
         Me.CheckLW.UncheckedState.BorderRadius = 0
         Me.CheckLW.UncheckedState.BorderThickness = 0
         Me.CheckLW.UncheckedState.FillColor = System.Drawing.Color.FromArgb(CType(CType(125, Byte), Integer), CType(CType(137, Byte), Integer), CType(CType(149, Byte), Integer))
+        Me.CheckLW.Visible = False
         '
         'CheckVib
         '
@@ -227,7 +231,7 @@ Partial Class Settings_Form
         Me.CheckVib.CheckedState.BorderThickness = 0
         Me.CheckVib.CheckedState.FillColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(148, Byte), Integer), CType(CType(255, Byte), Integer))
         Me.CheckVib.Font = New System.Drawing.Font("Segoe UI", 18.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CheckVib.Location = New System.Drawing.Point(94, 102)
+        Me.CheckVib.Location = New System.Drawing.Point(101, 59)
         Me.CheckVib.Name = "CheckVib"
         Me.CheckVib.Size = New System.Drawing.Size(128, 36)
         Me.CheckVib.TabIndex = 70
@@ -245,7 +249,7 @@ Partial Class Settings_Form
         Me.CheckPP.CheckedState.BorderThickness = 0
         Me.CheckPP.CheckedState.FillColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(148, Byte), Integer), CType(CType(255, Byte), Integer))
         Me.CheckPP.Font = New System.Drawing.Font("Segoe UI", 18.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CheckPP.Location = New System.Drawing.Point(94, 57)
+        Me.CheckPP.Location = New System.Drawing.Point(294, 89)
         Me.CheckPP.Name = "CheckPP"
         Me.CheckPP.Size = New System.Drawing.Size(171, 36)
         Me.CheckPP.TabIndex = 69
@@ -254,12 +258,13 @@ Partial Class Settings_Form
         Me.CheckPP.UncheckedState.BorderRadius = 0
         Me.CheckPP.UncheckedState.BorderThickness = 0
         Me.CheckPP.UncheckedState.FillColor = System.Drawing.Color.FromArgb(CType(CType(125, Byte), Integer), CType(CType(137, Byte), Integer), CType(CType(149, Byte), Integer))
+        Me.CheckPP.Visible = False
         '
         'Settings_Form
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(418, 511)
+        Me.ClientSize = New System.Drawing.Size(418, 380)
         Me.Controls.Add(Me.Guna2CustomGradientPanel1)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
         Me.Name = "Settings_Form"

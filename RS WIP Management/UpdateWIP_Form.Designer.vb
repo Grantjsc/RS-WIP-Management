@@ -77,7 +77,7 @@ Partial Class UpdateWIP_Form
         Me.GroupBoxTitle.Name = "GroupBoxTitle"
         Me.GroupBoxTitle.Size = New System.Drawing.Size(841, 589)
         Me.GroupBoxTitle.TabIndex = 3
-        Me.GroupBoxTitle.Text = "UPDATE SPUT TARGET"
+        Me.GroupBoxTitle.Text = "UPDATE WIP TARGET FOR SAM"
         Me.GroupBoxTitle.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
         '
         'btnUpdate

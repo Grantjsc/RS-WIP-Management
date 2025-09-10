@@ -13,6 +13,9 @@ Module Function_Module
 
     Public IN_Product As Boolean
 
+    Public Process_Indicator As Integer
+    Public LoadingProcess_ID As Integer
+
     Sub PunchPress_clicked()
 
         Form1.PunchPressToolStripMenuItem.ForeColor = Color.White
@@ -46,13 +49,13 @@ Module Function_Module
         Sput_Process = False
         SAM_Process = False
 
-        With PunchPress_Form
-            .TopLevel = False
-            Form1.MainPanel.Controls.Add(PunchPress_Form)
-            .WindowState = FormWindowState.Maximized
-            .BringToFront()
-            .Show()
-        End With
+        'With PunchPress_Form
+        '    .TopLevel = False
+        '    Form1.MainPanel.Controls.Add(PunchPress_Form)
+        '    .WindowState = FormWindowState.Maximized
+        '    .BringToFront()
+        '    .Show()
+        'End With
 
     End Sub
 
@@ -80,6 +83,9 @@ Module Function_Module
 
         Form1.lblProcessName.Text = "Vibrator"
 
+        Process_Indicator = 1
+        LoadingProcess_ID = 1
+
         PunchPress_Process = False
         Vibrator_Process = True
         LoadWash_Process = False
@@ -87,6 +93,8 @@ Module Function_Module
         Wash_Process = False
         Sput_Process = False
         SAM_Process = False
+
+        Load_Data("Vibrator_Qty")
 
         'With Vibrator_Form
         '    .TopLevel = False
@@ -96,13 +104,13 @@ Module Function_Module
         '    .Show()
         'End With
 
-        With PunchPress_Form
-            .TopLevel = False
-            Form1.MainPanel.Controls.Add(PunchPress_Form)
-            .WindowState = FormWindowState.Maximized
-            .BringToFront()
-            .Show()
-        End With
+        'With PunchPress_Form
+        '    .TopLevel = False
+        '    Form1.MainPanel.Controls.Add(PunchPress_Form)
+        '    .WindowState = FormWindowState.Maximized
+        '    .BringToFront()
+        '    .Show()
+        'End With
 
     End Sub
 
@@ -147,13 +155,13 @@ Module Function_Module
         'End With
 
 
-        With Vibrator_Form
-            .TopLevel = False
-            Form1.MainPanel.Controls.Add(Vibrator_Form)
-            .WindowState = FormWindowState.Maximized
-            .BringToFront()
-            .Show()
-        End With
+        'With Vibrator_Form
+        '    .TopLevel = False
+        '    Form1.MainPanel.Controls.Add(Vibrator_Form)
+        '    .WindowState = FormWindowState.Maximized
+        '    .BringToFront()
+        '    .Show()
+        'End With
 
     End Sub
 
@@ -180,7 +188,10 @@ Module Function_Module
         Form1.SAMToolStripMenuItem.BackColor = Color.Transparent
 
 
-        Form1.lblProcessName.Text = "Annealing"
+        Form1.lblProcessName.Text = "Anneal"
+
+        Process_Indicator = 2
+        LoadingProcess_ID = 2
 
         PunchPress_Process = False
         Vibrator_Process = False
@@ -189,6 +200,8 @@ Module Function_Module
         Wash_Process = False
         Sput_Process = False
         SAM_Process = False
+
+        Load_Data("Anneal_Qty")
 
         'With Anneal_Form
         '    .TopLevel = False
@@ -199,13 +212,13 @@ Module Function_Module
         'End With
 
 
-        With LoadWash_Form
-            .TopLevel = False
-            Form1.MainPanel.Controls.Add(LoadWash_Form)
-            .WindowState = FormWindowState.Maximized
-            .BringToFront()
-            .Show()
-        End With
+        'With LoadWash_Form
+        '    .TopLevel = False
+        '    Form1.MainPanel.Controls.Add(LoadWash_Form)
+        '    .WindowState = FormWindowState.Maximized
+        '    .BringToFront()
+        '    .Show()
+        'End With
 
     End Sub
 
@@ -269,6 +282,9 @@ Module Function_Module
 
         Form1.lblProcessName.Text = "Sput"
 
+        Process_Indicator = 3
+        LoadingProcess_ID = 3
+
         PunchPress_Process = False
         Vibrator_Process = False
         LoadWash_Process = False
@@ -276,6 +292,8 @@ Module Function_Module
         Wash_Process = False
         Sput_Process = True
         SAM_Process = False
+
+        Load_Data("Sput_Qty")
 
         'With Sput_Form
         '    .TopLevel = False
@@ -285,13 +303,13 @@ Module Function_Module
         '    .Show()
         'End With
 
-        With Anneal_Form
-            .TopLevel = False
-            Form1.MainPanel.Controls.Add(Anneal_Form)
-            .WindowState = FormWindowState.Maximized
-            .BringToFront()
-            .Show()
-        End With
+        'With Anneal_Form
+        '    .TopLevel = False
+        '    Form1.MainPanel.Controls.Add(Anneal_Form)
+        '    .WindowState = FormWindowState.Maximized
+        '    .BringToFront()
+        '    .Show()
+        'End With
 
     End Sub
 
@@ -719,28 +737,30 @@ Module Function_Module
     End Sub
 
     Sub Search_LotNumber()
-        If PunchPress_Process = True Then
-            Check_PunchPress_LotNum()
+        'If PunchPress_Process = True Then
+        '    Check_PunchPress_LotNum()
 
-        ElseIf Vibrator_Process = True Then
-            Check_Vibrator_LotNum()
+        'ElseIf Vibrator_Process = True Then
+        '    Check_Vibrator_LotNum()
 
-        ElseIf LoadWash_Process = True Then
-            Check_LW_LotNum()
+        'ElseIf LoadWash_Process = True Then
+        '    Check_LW_LotNum()
 
-        ElseIf Annealing_Process = True Then
-            Check_Annealing_LotNum()
+        'ElseIf Annealing_Process = True Then
+        '    Check_Annealing_LotNum()
 
-        ElseIf Wash_Process = True Then
-            Check_Wash_LotNum()
+        'ElseIf Wash_Process = True Then
+        '    Check_Wash_LotNum()
 
-        ElseIf Sput_Process = True Then
-            Check_Sput_LotNum()
+        'ElseIf Sput_Process = True Then
+        '    Check_Sput_LotNum()
 
-        ElseIf SAM_Process = True Then
-            Check_SAM_LotNum()
+        'ElseIf SAM_Process = True Then
+        '    Check_SAM_LotNum()
 
-        End If
+        'End If
+
+        Check_LotNum()
     End Sub
 
     '******************< to Load Process >*****************
@@ -788,6 +808,22 @@ Module Function_Module
             SAM_clicked()
         End If
     End Sub
+
+
+    '====================< START OF PHASE 2 >==================
+
+    Sub Load_AddDelete()
+        With AddDelete_Form
+            .TopLevel = False
+            Form1.Main.Controls.Add(AddDelete_Form)
+            .WindowState = FormWindowState.Maximized
+            .BringToFront()
+            .Show()
+        End With
+    End Sub
+
+    '====================< AddDelete_Form Code >==================
+
 End Module
 Module AppConfig_Module
     Public config As Configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None)

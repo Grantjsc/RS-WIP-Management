@@ -15,7 +15,7 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>\\btwebdev01\Websites\WindowsAppUpdater\TSG_Shared\RS WIP Management\</PublishUrl>
+    <PublishUrl>\\btwebdev01\Websites\WindowsAppUpdater\TSG_Shared\RS WIP Management x64\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Unc</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
@@ -29,7 +29,7 @@
     <PublisherName>Littelfuse Philippines %28TSG%29 - GCatapang</PublisherName>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>Installer.htm</WebPage>
-    <ApplicationRevision>15</ApplicationRevision>
+    <ApplicationRevision>25</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
@@ -37,7 +37,7 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <DefineDebug>true</DefineDebug>
@@ -117,6 +117,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AccessQuery.vb" />
+    <Compile Include="AddDelete_Form.Designer.vb">
+      <DependentUpon>AddDelete_Form.vb</DependentUpon>
+    </Compile>
+    <Compile Include="AddDelete_Form.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Anneal_Form.Designer.vb">
       <DependentUpon>Anneal_Form.vb</DependentUpon>
     </Compile>
@@ -228,6 +234,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="AddDelete_Form.resx">
+      <DependentUpon>AddDelete_Form.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Anneal_Form.resx">
       <DependentUpon>Anneal_Form.vb</DependentUpon>
     </EmbeddedResource>

@@ -23,6 +23,9 @@ Partial Class Form1
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(Form1))
+        Dim DataGridViewCellStyle4 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle5 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle6 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Me.lblfooter1 = New System.Windows.Forms.Label()
         Me.SettingToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.PunchPressToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -38,8 +41,11 @@ Partial Class Form1
         Me.UpdateWIPToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.VibratorToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
         Me.SputToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
+        Me.SAMToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
         Me.MenuToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.SettingsToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.EnableDisableProcessToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ProduToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.PictureBox1 = New System.Windows.Forms.PictureBox()
         Me.Label5 = New System.Windows.Forms.Label()
         Me.Label4 = New System.Windows.Forms.Label()
@@ -51,14 +57,24 @@ Partial Class Form1
         Me.txtLot = New Guna.UI2.WinForms.Guna2TextBox()
         Me.txtTransac = New Guna.UI2.WinForms.Guna2TextBox()
         Me.MainPanel = New System.Windows.Forms.Panel()
+        Me.btnLoad = New Guna.UI2.WinForms.Guna2Button()
+        Me.txtSearch = New Guna.UI2.WinForms.Guna2TextBox()
+        Me.DataGridView1 = New System.Windows.Forms.DataGridView()
+        Me.Guna2GroupBox3 = New Guna.UI2.WinForms.Guna2GroupBox()
         Me.btnClear = New Guna.UI2.WinForms.Guna2Button()
         Me.txtProduct = New Guna.UI2.WinForms.Guna2TextBox()
         Me.lblfooter2 = New System.Windows.Forms.Label()
         Me.Panel1 = New System.Windows.Forms.Panel()
         Me.Main = New Guna.UI2.WinForms.Guna2CustomGradientPanel()
+        Me.dtpEndDate = New Guna.UI2.WinForms.Guna2DateTimePicker()
+        Me.Label8 = New System.Windows.Forms.Label()
+        Me.dtpStartDate = New Guna.UI2.WinForms.Guna2DateTimePicker()
+        Me.Label7 = New System.Windows.Forms.Label()
         Me.MenuStrip1.SuspendLayout()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.MainPanel.SuspendLayout()
+        CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.Guna2GroupBox3.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.Main.SuspendLayout()
         Me.SuspendLayout()
@@ -103,12 +119,13 @@ Partial Class Form1
         Me.LoadAndWashToolStripMenuItem.Name = "LoadAndWashToolStripMenuItem"
         Me.LoadAndWashToolStripMenuItem.Size = New System.Drawing.Size(169, 22)
         Me.LoadAndWashToolStripMenuItem.Text = "Load and Wash"
+        Me.LoadAndWashToolStripMenuItem.Visible = False
         '
         'AnnealingToolStripMenuItem
         '
         Me.AnnealingToolStripMenuItem.Name = "AnnealingToolStripMenuItem"
         Me.AnnealingToolStripMenuItem.Size = New System.Drawing.Size(169, 22)
-        Me.AnnealingToolStripMenuItem.Text = "Annealing"
+        Me.AnnealingToolStripMenuItem.Text = "Anneal"
         '
         'WashToolStripMenuItem
         '
@@ -157,7 +174,7 @@ Partial Class Form1
         '
         'UpdateWIPToolStripMenuItem
         '
-        Me.UpdateWIPToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.VibratorToolStripMenuItem1, Me.SputToolStripMenuItem1})
+        Me.UpdateWIPToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.VibratorToolStripMenuItem1, Me.SputToolStripMenuItem1, Me.SAMToolStripMenuItem1})
         Me.UpdateWIPToolStripMenuItem.Name = "UpdateWIPToolStripMenuItem"
         Me.UpdateWIPToolStripMenuItem.Size = New System.Drawing.Size(162, 22)
         Me.UpdateWIPToolStripMenuItem.Text = "Update Target"
@@ -167,12 +184,20 @@ Partial Class Form1
         Me.VibratorToolStripMenuItem1.Name = "VibratorToolStripMenuItem1"
         Me.VibratorToolStripMenuItem1.Size = New System.Drawing.Size(125, 22)
         Me.VibratorToolStripMenuItem1.Text = "Vibrator"
+        Me.VibratorToolStripMenuItem1.Visible = False
         '
         'SputToolStripMenuItem1
         '
         Me.SputToolStripMenuItem1.Name = "SputToolStripMenuItem1"
         Me.SputToolStripMenuItem1.Size = New System.Drawing.Size(125, 22)
         Me.SputToolStripMenuItem1.Text = "Sput"
+        Me.SputToolStripMenuItem1.Visible = False
+        '
+        'SAMToolStripMenuItem1
+        '
+        Me.SAMToolStripMenuItem1.Name = "SAMToolStripMenuItem1"
+        Me.SAMToolStripMenuItem1.Size = New System.Drawing.Size(125, 22)
+        Me.SAMToolStripMenuItem1.Text = "SAM"
         '
         'MenuToolStripMenuItem
         '
@@ -183,9 +208,22 @@ Partial Class Form1
         '
         'SettingsToolStripMenuItem
         '
+        Me.SettingsToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.EnableDisableProcessToolStripMenuItem, Me.ProduToolStripMenuItem})
         Me.SettingsToolStripMenuItem.Name = "SettingsToolStripMenuItem"
         Me.SettingsToolStripMenuItem.Size = New System.Drawing.Size(69, 21)
         Me.SettingsToolStripMenuItem.Text = "Settings"
+        '
+        'EnableDisableProcessToolStripMenuItem
+        '
+        Me.EnableDisableProcessToolStripMenuItem.Name = "EnableDisableProcessToolStripMenuItem"
+        Me.EnableDisableProcessToolStripMenuItem.Size = New System.Drawing.Size(236, 22)
+        Me.EnableDisableProcessToolStripMenuItem.Text = "Enable/Disable Process"
+        '
+        'ProduToolStripMenuItem
+        '
+        Me.ProduToolStripMenuItem.Name = "ProduToolStripMenuItem"
+        Me.ProduToolStripMenuItem.Size = New System.Drawing.Size(236, 22)
+        Me.ProduToolStripMenuItem.Text = "Add/Delete Product Name"
         '
         'PictureBox1
         '
@@ -201,24 +239,25 @@ Partial Class Form1
         '
         'Label5
         '
+        Me.Label5.Anchor = System.Windows.Forms.AnchorStyles.None
         Me.Label5.AutoSize = True
         Me.Label5.BackColor = System.Drawing.Color.Transparent
-        Me.Label5.Font = New System.Drawing.Font("Impact", 27.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label5.Font = New System.Drawing.Font("Impact", 18.0!)
         Me.Label5.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.Label5.Location = New System.Drawing.Point(174, 291)
+        Me.Label5.Location = New System.Drawing.Point(38, 258)
         Me.Label5.Name = "Label5"
-        Me.Label5.Size = New System.Drawing.Size(147, 45)
+        Me.Label5.Size = New System.Drawing.Size(95, 29)
         Me.Label5.TabIndex = 131
         Me.Label5.Text = "Quantity"
-        Me.Label5.Visible = False
         '
         'Label4
         '
+        Me.Label4.Anchor = System.Windows.Forms.AnchorStyles.Top
         Me.Label4.AutoSize = True
         Me.Label4.BackColor = System.Drawing.Color.Transparent
         Me.Label4.Font = New System.Drawing.Font("Impact", 27.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Label4.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.Label4.Location = New System.Drawing.Point(120, 212)
+        Me.Label4.Location = New System.Drawing.Point(823, 12)
         Me.Label4.Name = "Label4"
         Me.Label4.Size = New System.Drawing.Size(201, 45)
         Me.Label4.TabIndex = 130
@@ -227,19 +266,20 @@ Partial Class Form1
         '
         'Label3
         '
+        Me.Label3.Anchor = System.Windows.Forms.AnchorStyles.None
         Me.Label3.AutoSize = True
         Me.Label3.BackColor = System.Drawing.Color.Transparent
-        Me.Label3.Font = New System.Drawing.Font("Impact", 27.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label3.Font = New System.Drawing.Font("Impact", 18.0!)
         Me.Label3.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.Label3.Location = New System.Drawing.Point(133, 133)
+        Me.Label3.Location = New System.Drawing.Point(38, 151)
         Me.Label3.Name = "Label3"
-        Me.Label3.Size = New System.Drawing.Size(188, 45)
+        Me.Label3.Size = New System.Drawing.Size(123, 29)
         Me.Label3.TabIndex = 129
         Me.Label3.Text = "Lot number"
-        Me.Label3.Visible = False
         '
         'btnSubmit
         '
+        Me.btnSubmit.Anchor = System.Windows.Forms.AnchorStyles.None
         Me.btnSubmit.BackColor = System.Drawing.Color.Transparent
         Me.btnSubmit.BorderColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(148, Byte), Integer), CType(CType(255, Byte), Integer))
         Me.btnSubmit.BorderRadius = 15
@@ -255,13 +295,13 @@ Partial Class Form1
         Me.btnSubmit.HoverState.ForeColor = System.Drawing.Color.White
         Me.btnSubmit.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.btnSubmit.ImageSize = New System.Drawing.Size(45, 45)
-        Me.btnSubmit.Location = New System.Drawing.Point(279, 394)
+        Me.btnSubmit.Location = New System.Drawing.Point(-42, 466)
         Me.btnSubmit.Name = "btnSubmit"
         Me.btnSubmit.ShadowDecoration.BorderRadius = 15
         Me.btnSubmit.ShadowDecoration.Color = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer), CType(CType(255, Byte), Integer))
         Me.btnSubmit.ShadowDecoration.Enabled = True
         Me.btnSubmit.ShadowDecoration.Shadow = New System.Windows.Forms.Padding(7)
-        Me.btnSubmit.Size = New System.Drawing.Size(134, 56)
+        Me.btnSubmit.Size = New System.Drawing.Size(104, 41)
         Me.btnSubmit.TabIndex = 4
         Me.btnSubmit.Text = "Submit"
         Me.btnSubmit.Visible = False
@@ -281,19 +321,20 @@ Partial Class Form1
         '
         'Label2
         '
+        Me.Label2.Anchor = System.Windows.Forms.AnchorStyles.None
         Me.Label2.AutoSize = True
         Me.Label2.BackColor = System.Drawing.Color.Transparent
-        Me.Label2.Font = New System.Drawing.Font("Impact", 27.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label2.Font = New System.Drawing.Font("Impact", 18.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Label2.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.Label2.Location = New System.Drawing.Point(91, 54)
+        Me.Label2.Location = New System.Drawing.Point(38, 52)
         Me.Label2.Name = "Label2"
-        Me.Label2.Size = New System.Drawing.Size(230, 45)
+        Me.Label2.Size = New System.Drawing.Size(150, 29)
         Me.Label2.TabIndex = 128
         Me.Label2.Text = "Product name"
-        Me.Label2.Visible = False
         '
         'txtQty
         '
+        Me.txtQty.Anchor = System.Windows.Forms.AnchorStyles.None
         Me.txtQty.BackColor = System.Drawing.Color.Transparent
         Me.txtQty.BorderColor = System.Drawing.Color.Black
         Me.txtQty.BorderRadius = 10
@@ -305,21 +346,21 @@ Partial Class Form1
         Me.txtQty.DisabledState.ForeColor = System.Drawing.Color.FromArgb(CType(CType(138, Byte), Integer), CType(CType(138, Byte), Integer), CType(CType(138, Byte), Integer))
         Me.txtQty.DisabledState.PlaceholderForeColor = System.Drawing.Color.FromArgb(CType(CType(138, Byte), Integer), CType(CType(138, Byte), Integer), CType(CType(138, Byte), Integer))
         Me.txtQty.FocusedState.BorderColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(148, Byte), Integer), CType(CType(255, Byte), Integer))
-        Me.txtQty.Font = New System.Drawing.Font("Segoe UI Semibold", 21.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.txtQty.Font = New System.Drawing.Font("Segoe UI Semibold", 18.0!, System.Drawing.FontStyle.Bold)
         Me.txtQty.ForeColor = System.Drawing.Color.DimGray
         Me.txtQty.HoverState.BorderColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(148, Byte), Integer), CType(CType(255, Byte), Integer))
-        Me.txtQty.Location = New System.Drawing.Point(368, 277)
+        Me.txtQty.Location = New System.Drawing.Point(38, 295)
         Me.txtQty.Margin = New System.Windows.Forms.Padding(7, 8, 7, 8)
         Me.txtQty.Name = "txtQty"
         Me.txtQty.PasswordChar = Global.Microsoft.VisualBasic.ChrW(0)
         Me.txtQty.PlaceholderText = ""
         Me.txtQty.SelectedText = ""
-        Me.txtQty.Size = New System.Drawing.Size(431, 73)
+        Me.txtQty.Size = New System.Drawing.Size(296, 52)
         Me.txtQty.TabIndex = 3
-        Me.txtQty.Visible = False
         '
         'txtLot
         '
+        Me.txtLot.Anchor = System.Windows.Forms.AnchorStyles.None
         Me.txtLot.BackColor = System.Drawing.Color.Transparent
         Me.txtLot.BorderColor = System.Drawing.Color.Black
         Me.txtLot.BorderRadius = 10
@@ -331,21 +372,21 @@ Partial Class Form1
         Me.txtLot.DisabledState.ForeColor = System.Drawing.Color.FromArgb(CType(CType(138, Byte), Integer), CType(CType(138, Byte), Integer), CType(CType(138, Byte), Integer))
         Me.txtLot.DisabledState.PlaceholderForeColor = System.Drawing.Color.FromArgb(CType(CType(138, Byte), Integer), CType(CType(138, Byte), Integer), CType(CType(138, Byte), Integer))
         Me.txtLot.FocusedState.BorderColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(148, Byte), Integer), CType(CType(255, Byte), Integer))
-        Me.txtLot.Font = New System.Drawing.Font("Segoe UI Semibold", 21.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.txtLot.Font = New System.Drawing.Font("Segoe UI Semibold", 18.0!, System.Drawing.FontStyle.Bold)
         Me.txtLot.ForeColor = System.Drawing.Color.DimGray
         Me.txtLot.HoverState.BorderColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(148, Byte), Integer), CType(CType(255, Byte), Integer))
-        Me.txtLot.Location = New System.Drawing.Point(368, 119)
+        Me.txtLot.Location = New System.Drawing.Point(38, 188)
         Me.txtLot.Margin = New System.Windows.Forms.Padding(7, 8, 7, 8)
         Me.txtLot.Name = "txtLot"
         Me.txtLot.PasswordChar = Global.Microsoft.VisualBasic.ChrW(0)
         Me.txtLot.PlaceholderText = ""
         Me.txtLot.SelectedText = ""
-        Me.txtLot.Size = New System.Drawing.Size(431, 73)
+        Me.txtLot.Size = New System.Drawing.Size(296, 52)
         Me.txtLot.TabIndex = 1
-        Me.txtLot.Visible = False
         '
         'txtTransac
         '
+        Me.txtTransac.Anchor = System.Windows.Forms.AnchorStyles.Top
         Me.txtTransac.BackColor = System.Drawing.Color.Transparent
         Me.txtTransac.BorderColor = System.Drawing.Color.Black
         Me.txtTransac.BorderRadius = 10
@@ -360,7 +401,7 @@ Partial Class Form1
         Me.txtTransac.Font = New System.Drawing.Font("Segoe UI Semibold", 21.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.txtTransac.ForeColor = System.Drawing.Color.DimGray
         Me.txtTransac.HoverState.BorderColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(148, Byte), Integer), CType(CType(255, Byte), Integer))
-        Me.txtTransac.Location = New System.Drawing.Point(368, 198)
+        Me.txtTransac.Location = New System.Drawing.Point(831, 65)
         Me.txtTransac.Margin = New System.Windows.Forms.Padding(7, 8, 7, 8)
         Me.txtTransac.Name = "txtTransac"
         Me.txtTransac.PasswordChar = Global.Microsoft.VisualBasic.ChrW(0)
@@ -378,23 +419,134 @@ Partial Class Form1
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.MainPanel.BackColor = System.Drawing.Color.FromArgb(CType(CType(241, Byte), Integer), CType(CType(242, Byte), Integer), CType(CType(246, Byte), Integer))
         Me.MainPanel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
-        Me.MainPanel.Controls.Add(Me.btnClear)
-        Me.MainPanel.Controls.Add(Me.Label5)
-        Me.MainPanel.Controls.Add(Me.Label4)
-        Me.MainPanel.Controls.Add(Me.Label3)
+        Me.MainPanel.Controls.Add(Me.btnLoad)
+        Me.MainPanel.Controls.Add(Me.txtSearch)
+        Me.MainPanel.Controls.Add(Me.DataGridView1)
+        Me.MainPanel.Controls.Add(Me.Guna2GroupBox3)
         Me.MainPanel.Controls.Add(Me.btnSubmit)
-        Me.MainPanel.Controls.Add(Me.Label2)
-        Me.MainPanel.Controls.Add(Me.txtProduct)
-        Me.MainPanel.Controls.Add(Me.txtQty)
-        Me.MainPanel.Controls.Add(Me.txtLot)
-        Me.MainPanel.Controls.Add(Me.txtTransac)
         Me.MainPanel.Location = New System.Drawing.Point(0, 109)
         Me.MainPanel.Name = "MainPanel"
         Me.MainPanel.Size = New System.Drawing.Size(897, 499)
         Me.MainPanel.TabIndex = 124
         '
+        'btnLoad
+        '
+        Me.btnLoad.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.btnLoad.BackColor = System.Drawing.Color.Transparent
+        Me.btnLoad.BorderRadius = 5
+        Me.btnLoad.BorderThickness = 2
+        Me.btnLoad.DisabledState.BorderColor = System.Drawing.Color.DarkGray
+        Me.btnLoad.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray
+        Me.btnLoad.DisabledState.FillColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(169, Byte), Integer), CType(CType(169, Byte), Integer))
+        Me.btnLoad.DisabledState.ForeColor = System.Drawing.Color.FromArgb(CType(CType(141, Byte), Integer), CType(CType(141, Byte), Integer), CType(CType(141, Byte), Integer))
+        Me.btnLoad.FillColor = System.Drawing.SystemColors.Control
+        Me.btnLoad.Font = New System.Drawing.Font("Segoe UI", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnLoad.ForeColor = System.Drawing.Color.Black
+        Me.btnLoad.HoverState.FillColor = System.Drawing.Color.FromArgb(CType(CType(15, Byte), Integer), CType(CType(104, Byte), Integer), CType(CType(169, Byte), Integer))
+        Me.btnLoad.HoverState.ForeColor = System.Drawing.Color.White
+        Me.btnLoad.HoverState.Image = CType(resources.GetObject("resource.Image"), System.Drawing.Image)
+        Me.btnLoad.Image = CType(resources.GetObject("btnLoad.Image"), System.Drawing.Image)
+        Me.btnLoad.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.btnLoad.ImageSize = New System.Drawing.Size(25, 25)
+        Me.btnLoad.Location = New System.Drawing.Point(749, 39)
+        Me.btnLoad.Name = "btnLoad"
+        Me.btnLoad.Size = New System.Drawing.Size(120, 33)
+        Me.btnLoad.TabIndex = 227
+        Me.btnLoad.Text = "Load All"
+        Me.btnLoad.TextOffset = New System.Drawing.Point(15, 0)
+        '
+        'txtSearch
+        '
+        Me.txtSearch.BackColor = System.Drawing.Color.Transparent
+        Me.txtSearch.BorderColor = System.Drawing.Color.Black
+        Me.txtSearch.BorderRadius = 15
+        Me.txtSearch.Cursor = System.Windows.Forms.Cursors.IBeam
+        Me.txtSearch.DefaultText = ""
+        Me.txtSearch.DisabledState.BorderColor = System.Drawing.Color.FromArgb(CType(CType(208, Byte), Integer), CType(CType(208, Byte), Integer), CType(CType(208, Byte), Integer))
+        Me.txtSearch.DisabledState.FillColor = System.Drawing.Color.FromArgb(CType(CType(226, Byte), Integer), CType(CType(226, Byte), Integer), CType(CType(226, Byte), Integer))
+        Me.txtSearch.DisabledState.ForeColor = System.Drawing.Color.FromArgb(CType(CType(138, Byte), Integer), CType(CType(138, Byte), Integer), CType(CType(138, Byte), Integer))
+        Me.txtSearch.DisabledState.PlaceholderForeColor = System.Drawing.Color.FromArgb(CType(CType(138, Byte), Integer), CType(CType(138, Byte), Integer), CType(CType(138, Byte), Integer))
+        Me.txtSearch.FocusedState.BorderColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(148, Byte), Integer), CType(CType(255, Byte), Integer))
+        Me.txtSearch.Font = New System.Drawing.Font("Segoe UI Semibold", 11.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.txtSearch.ForeColor = System.Drawing.Color.Black
+        Me.txtSearch.HoverState.BorderColor = System.Drawing.Color.LightGray
+        Me.txtSearch.IconLeft = CType(resources.GetObject("txtSearch.IconLeft"), System.Drawing.Image)
+        Me.txtSearch.IconLeftOffset = New System.Drawing.Point(5, 0)
+        Me.txtSearch.Location = New System.Drawing.Point(418, 38)
+        Me.txtSearch.Margin = New System.Windows.Forms.Padding(2, 3, 2, 3)
+        Me.txtSearch.Name = "txtSearch"
+        Me.txtSearch.PasswordChar = Global.Microsoft.VisualBasic.ChrW(0)
+        Me.txtSearch.PlaceholderText = "Search lot number"
+        Me.txtSearch.SelectedText = ""
+        Me.txtSearch.Size = New System.Drawing.Size(323, 28)
+        Me.txtSearch.TabIndex = 226
+        Me.txtSearch.TextOffset = New System.Drawing.Point(10, 0)
+        '
+        'DataGridView1
+        '
+        Me.DataGridView1.AllowUserToAddRows = False
+        Me.DataGridView1.AllowUserToDeleteRows = False
+        Me.DataGridView1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.DataGridView1.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill
+        Me.DataGridView1.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells
+        Me.DataGridView1.ClipboardCopyMode = System.Windows.Forms.DataGridViewClipboardCopyMode.EnableAlwaysIncludeHeaderText
+        DataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(CType(CType(15, Byte), Integer), CType(CType(104, Byte), Integer), CType(CType(169, Byte), Integer))
+        DataGridViewCellStyle4.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        DataGridViewCellStyle4.ForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle4.SelectionBackColor = System.Drawing.Color.Transparent
+        DataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.DataGridView1.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle4
+        Me.DataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        Me.DataGridView1.Location = New System.Drawing.Point(418, 78)
+        Me.DataGridView1.Name = "DataGridView1"
+        Me.DataGridView1.ReadOnly = True
+        DataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle5.BackColor = System.Drawing.Color.FromArgb(CType(CType(15, Byte), Integer), CType(CType(104, Byte), Integer), CType(CType(169, Byte), Integer))
+        DataGridViewCellStyle5.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        DataGridViewCellStyle5.ForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(15, Byte), Integer), CType(CType(104, Byte), Integer), CType(CType(169, Byte), Integer))
+        DataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.DataGridView1.RowHeadersDefaultCellStyle = DataGridViewCellStyle5
+        Me.DataGridView1.RowHeadersVisible = False
+        Me.DataGridView1.RowHeadersWidth = 51
+        DataGridViewCellStyle6.ForeColor = System.Drawing.Color.Black
+        Me.DataGridView1.RowsDefaultCellStyle = DataGridViewCellStyle6
+        Me.DataGridView1.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
+        Me.DataGridView1.Size = New System.Drawing.Size(451, 382)
+        Me.DataGridView1.TabIndex = 225
+        '
+        'Guna2GroupBox3
+        '
+        Me.Guna2GroupBox3.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.Guna2GroupBox3.BackColor = System.Drawing.Color.Transparent
+        Me.Guna2GroupBox3.BorderColor = System.Drawing.Color.Black
+        Me.Guna2GroupBox3.BorderRadius = 5
+        Me.Guna2GroupBox3.BorderThickness = 5
+        Me.Guna2GroupBox3.Controls.Add(Me.Label2)
+        Me.Guna2GroupBox3.Controls.Add(Me.btnClear)
+        Me.Guna2GroupBox3.Controls.Add(Me.txtLot)
+        Me.Guna2GroupBox3.Controls.Add(Me.Label5)
+        Me.Guna2GroupBox3.Controls.Add(Me.txtQty)
+        Me.Guna2GroupBox3.Controls.Add(Me.Label3)
+        Me.Guna2GroupBox3.Controls.Add(Me.txtProduct)
+        Me.Guna2GroupBox3.CustomBorderThickness = New System.Windows.Forms.Padding(0)
+        Me.Guna2GroupBox3.Font = New System.Drawing.Font("Segoe UI", 14.0!, System.Drawing.FontStyle.Bold)
+        Me.Guna2GroupBox3.ForeColor = System.Drawing.Color.Black
+        Me.Guna2GroupBox3.Location = New System.Drawing.Point(28, 39)
+        Me.Guna2GroupBox3.Name = "Guna2GroupBox3"
+        Me.Guna2GroupBox3.Size = New System.Drawing.Size(368, 421)
+        Me.Guna2GroupBox3.TabIndex = 224
+        Me.Guna2GroupBox3.Text = "Details"
+        '
         'btnClear
         '
+        Me.btnClear.Anchor = System.Windows.Forms.AnchorStyles.None
         Me.btnClear.BackColor = System.Drawing.Color.Transparent
         Me.btnClear.BorderColor = System.Drawing.Color.Red
         Me.btnClear.BorderRadius = 15
@@ -410,19 +562,19 @@ Partial Class Form1
         Me.btnClear.HoverState.ForeColor = System.Drawing.Color.White
         Me.btnClear.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.btnClear.ImageSize = New System.Drawing.Size(45, 45)
-        Me.btnClear.Location = New System.Drawing.Point(493, 394)
+        Me.btnClear.Location = New System.Drawing.Point(130, 358)
         Me.btnClear.Name = "btnClear"
         Me.btnClear.ShadowDecoration.BorderRadius = 15
         Me.btnClear.ShadowDecoration.Color = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(192, Byte), Integer), CType(CType(192, Byte), Integer))
         Me.btnClear.ShadowDecoration.Enabled = True
         Me.btnClear.ShadowDecoration.Shadow = New System.Windows.Forms.Padding(7)
-        Me.btnClear.Size = New System.Drawing.Size(134, 56)
+        Me.btnClear.Size = New System.Drawing.Size(104, 41)
         Me.btnClear.TabIndex = 5
         Me.btnClear.Text = "Clear"
-        Me.btnClear.Visible = False
         '
         'txtProduct
         '
+        Me.txtProduct.Anchor = System.Windows.Forms.AnchorStyles.None
         Me.txtProduct.BackColor = System.Drawing.Color.Transparent
         Me.txtProduct.BorderColor = System.Drawing.Color.Black
         Me.txtProduct.BorderRadius = 10
@@ -434,18 +586,17 @@ Partial Class Form1
         Me.txtProduct.DisabledState.ForeColor = System.Drawing.Color.FromArgb(CType(CType(138, Byte), Integer), CType(CType(138, Byte), Integer), CType(CType(138, Byte), Integer))
         Me.txtProduct.DisabledState.PlaceholderForeColor = System.Drawing.Color.FromArgb(CType(CType(138, Byte), Integer), CType(CType(138, Byte), Integer), CType(CType(138, Byte), Integer))
         Me.txtProduct.FocusedState.BorderColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(148, Byte), Integer), CType(CType(255, Byte), Integer))
-        Me.txtProduct.Font = New System.Drawing.Font("Segoe UI Semibold", 21.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.txtProduct.Font = New System.Drawing.Font("Segoe UI Semibold", 18.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.txtProduct.ForeColor = System.Drawing.Color.DimGray
         Me.txtProduct.HoverState.BorderColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(148, Byte), Integer), CType(CType(255, Byte), Integer))
-        Me.txtProduct.Location = New System.Drawing.Point(368, 40)
+        Me.txtProduct.Location = New System.Drawing.Point(38, 89)
         Me.txtProduct.Margin = New System.Windows.Forms.Padding(7, 8, 7, 8)
         Me.txtProduct.Name = "txtProduct"
         Me.txtProduct.PasswordChar = Global.Microsoft.VisualBasic.ChrW(0)
         Me.txtProduct.PlaceholderText = ""
         Me.txtProduct.SelectedText = ""
-        Me.txtProduct.Size = New System.Drawing.Size(431, 73)
+        Me.txtProduct.Size = New System.Drawing.Size(296, 52)
         Me.txtProduct.TabIndex = 0
-        Me.txtProduct.Visible = False
         '
         'lblfooter2
         '
@@ -469,7 +620,9 @@ Partial Class Form1
         Me.Panel1.BackColor = System.Drawing.SystemColors.Control
         Me.Panel1.Controls.Add(Me.MainPanel)
         Me.Panel1.Controls.Add(Me.lblProcessName)
+        Me.Panel1.Controls.Add(Me.Label4)
         Me.Panel1.Controls.Add(Me.PictureBox1)
+        Me.Panel1.Controls.Add(Me.txtTransac)
         Me.Panel1.Location = New System.Drawing.Point(40, 42)
         Me.Panel1.Name = "Panel1"
         Me.Panel1.Size = New System.Drawing.Size(897, 608)
@@ -479,8 +632,12 @@ Partial Class Form1
         '
         Me.Main.AutoScroll = True
         Me.Main.BackColor = System.Drawing.Color.Transparent
+        Me.Main.Controls.Add(Me.dtpEndDate)
         Me.Main.Controls.Add(Me.lblfooter2)
+        Me.Main.Controls.Add(Me.Label8)
         Me.Main.Controls.Add(Me.Panel1)
+        Me.Main.Controls.Add(Me.dtpStartDate)
+        Me.Main.Controls.Add(Me.Label7)
         Me.Main.Controls.Add(Me.MenuStrip1)
         Me.Main.Controls.Add(Me.lblfooter1)
         Me.Main.Dock = System.Windows.Forms.DockStyle.Fill
@@ -492,6 +649,74 @@ Partial Class Form1
         Me.Main.Name = "Main"
         Me.Main.Size = New System.Drawing.Size(980, 701)
         Me.Main.TabIndex = 1
+        '
+        'dtpEndDate
+        '
+        Me.dtpEndDate.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.dtpEndDate.BackColor = System.Drawing.Color.Transparent
+        Me.dtpEndDate.BorderRadius = 10
+        Me.dtpEndDate.Checked = True
+        Me.dtpEndDate.FillColor = System.Drawing.Color.Black
+        Me.dtpEndDate.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Bold)
+        Me.dtpEndDate.ForeColor = System.Drawing.Color.White
+        Me.dtpEndDate.Format = System.Windows.Forms.DateTimePickerFormat.[Short]
+        Me.dtpEndDate.Location = New System.Drawing.Point(657, 3)
+        Me.dtpEndDate.MaxDate = New Date(9998, 12, 31, 0, 0, 0, 0)
+        Me.dtpEndDate.MinDate = New Date(1753, 1, 1, 0, 0, 0, 0)
+        Me.dtpEndDate.Name = "dtpEndDate"
+        Me.dtpEndDate.Size = New System.Drawing.Size(166, 36)
+        Me.dtpEndDate.TabIndex = 210
+        Me.dtpEndDate.Value = New Date(2024, 10, 30, 0, 0, 0, 0)
+        Me.dtpEndDate.Visible = False
+        '
+        'Label8
+        '
+        Me.Label8.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Label8.AutoSize = True
+        Me.Label8.BackColor = System.Drawing.Color.Transparent
+        Me.Label8.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label8.ForeColor = System.Drawing.Color.Black
+        Me.Label8.Location = New System.Drawing.Point(576, 12)
+        Me.Label8.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
+        Me.Label8.Name = "Label8"
+        Me.Label8.Size = New System.Drawing.Size(76, 20)
+        Me.Label8.TabIndex = 211
+        Me.Label8.Text = "End Date:"
+        Me.Label8.Visible = False
+        '
+        'dtpStartDate
+        '
+        Me.dtpStartDate.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.dtpStartDate.BackColor = System.Drawing.Color.Transparent
+        Me.dtpStartDate.BorderRadius = 10
+        Me.dtpStartDate.Checked = True
+        Me.dtpStartDate.FillColor = System.Drawing.Color.Black
+        Me.dtpStartDate.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Bold)
+        Me.dtpStartDate.ForeColor = System.Drawing.Color.White
+        Me.dtpStartDate.Format = System.Windows.Forms.DateTimePickerFormat.[Short]
+        Me.dtpStartDate.Location = New System.Drawing.Point(378, 3)
+        Me.dtpStartDate.MaxDate = New Date(9998, 12, 31, 0, 0, 0, 0)
+        Me.dtpStartDate.MinDate = New Date(1753, 1, 1, 0, 0, 0, 0)
+        Me.dtpStartDate.Name = "dtpStartDate"
+        Me.dtpStartDate.Size = New System.Drawing.Size(166, 36)
+        Me.dtpStartDate.TabIndex = 208
+        Me.dtpStartDate.Value = New Date(2024, 10, 30, 0, 0, 0, 0)
+        Me.dtpStartDate.Visible = False
+        '
+        'Label7
+        '
+        Me.Label7.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Label7.AutoSize = True
+        Me.Label7.BackColor = System.Drawing.Color.Transparent
+        Me.Label7.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label7.ForeColor = System.Drawing.Color.Black
+        Me.Label7.Location = New System.Drawing.Point(288, 12)
+        Me.Label7.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
+        Me.Label7.Name = "Label7"
+        Me.Label7.Size = New System.Drawing.Size(84, 20)
+        Me.Label7.TabIndex = 209
+        Me.Label7.Text = "Start Date:"
+        Me.Label7.Visible = False
         '
         'Form1
         '
@@ -510,8 +735,11 @@ Partial Class Form1
         Me.MenuStrip1.PerformLayout()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.MainPanel.ResumeLayout(False)
-        Me.MainPanel.PerformLayout()
+        CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.Guna2GroupBox3.ResumeLayout(False)
+        Me.Guna2GroupBox3.PerformLayout()
         Me.Panel1.ResumeLayout(False)
+        Me.Panel1.PerformLayout()
         Me.Main.ResumeLayout(False)
         Me.Main.PerformLayout()
         Me.ResumeLayout(False)
@@ -551,4 +779,15 @@ Partial Class Form1
     Friend WithEvents ViewWIPToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents VibratorToolStripMenuItem1 As ToolStripMenuItem
     Friend WithEvents SputToolStripMenuItem1 As ToolStripMenuItem
+    Friend WithEvents Guna2GroupBox3 As Guna.UI2.WinForms.Guna2GroupBox
+    Friend WithEvents DataGridView1 As DataGridView
+    Friend WithEvents txtSearch As Guna.UI2.WinForms.Guna2TextBox
+    Friend WithEvents dtpEndDate As Guna.UI2.WinForms.Guna2DateTimePicker
+    Friend WithEvents Label8 As Label
+    Friend WithEvents dtpStartDate As Guna.UI2.WinForms.Guna2DateTimePicker
+    Friend WithEvents Label7 As Label
+    Friend WithEvents btnLoad As Guna.UI2.WinForms.Guna2Button
+    Friend WithEvents SAMToolStripMenuItem1 As ToolStripMenuItem
+    Friend WithEvents EnableDisableProcessToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ProduToolStripMenuItem As ToolStripMenuItem
 End Class

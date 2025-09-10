@@ -3,20 +3,29 @@
 Public Class WIP_Form
     Private Sub WIP_Form_Load(sender As Object, e As EventArgs) Handles Me.Load
         AddHandler DataGridView1.DataBindingComplete, AddressOf ApplyCellStyles
-        'Get_WIP_Start()
-        'Get_WIP_End()
+        ''Get_WIP_Start()
+        ''Get_WIP_End()
 
-        SAM_sub_Gap()
-        Load_Avail_WIP()
-        'Load_Target_WIP()
+        'SAM_sub_Gap()
+        'Load_Avail_WIP()
+        ''Load_Target_WIP()
 
-        'dtpStartDate.Value = Date.Now
-        'dtpEndDate.Value = Date.Now
+        ''dtpStartDate.Value = Date.Now
+        ''dtpEndDate.Value = Date.Now
 
-        'Load_WIP_BaseStartEnd()
-        'No_SUM = True
+        ''Load_WIP_BaseStartEnd()
+        ''No_SUM = True
 
-        '=========< 
+        '=========< Phase 2 >========
+        SPUT_sub_SAM_Phase2()
+        'Load_Avail_WIP()
+        Load_Avail_WIP_Phase2()
+
+        For Each col As DataGridViewColumn In DataGridView1.Columns
+            col.SortMode = DataGridViewColumnSortMode.NotSortable
+        Next
+
+        Timer1.Enabled = True
     End Sub
 
     Private Sub DataGridView1_CellClick(sender As Object, e As DataGridViewCellEventArgs) Handles DataGridView1.CellClick
@@ -97,20 +106,44 @@ Public Class WIP_Form
 
     Private Sub ApplyCellStyles(sender As Object, e As DataGridViewBindingCompleteEventArgs)
         ' Apply conditional formatting at the cell level
+
+        'For Each row As DataGridViewRow In DataGridView1.Rows
+        '    For Each cell As DataGridViewCell In row.Cells
+        '        Dim cellValue As Decimal
+        '        ' Check if the cell value is numeric and negative
+        '        If Decimal.TryParse(cell.Value?.ToString(), cellValue) AndAlso cellValue < 0 Then
+        '            cell.Style.BackColor = Color.Red
+        '            cell.Style.ForeColor = Color.White
+        '        Else
+        '            ' Reset to default style for non-negative or non-numeric values
+        '            cell.Style.BackColor = Color.Empty
+        '            cell.Style.ForeColor = Color.Empty
+        '        End If
+        '    Next
+        'Next
+
         For Each row As DataGridViewRow In DataGridView1.Rows
-            For Each cell As DataGridViewCell In row.Cells
+            ' Skip the new row placeholder
+            If Not row.IsNewRow Then
+                Dim cell As DataGridViewCell = row.Cells("GAP") ' Use the column name "GAP"
                 Dim cellValue As Decimal
-                ' Check if the cell value is numeric and negative
-                If Decimal.TryParse(cell.Value?.ToString(), cellValue) AndAlso cellValue < 0 Then
-                    cell.Style.BackColor = Color.Red
-                    cell.Style.ForeColor = Color.White
+
+                If Decimal.TryParse(cell.Value?.ToString(), cellValue) Then
+                    If cellValue < 0D Then
+                        cell.Style.BackColor = Color.Red
+                        cell.Style.ForeColor = Color.White
+                    Else
+                        cell.Style.BackColor = Color.MediumSeaGreen
+                        cell.Style.ForeColor = Color.White
+                    End If
                 Else
-                    ' Reset to default style for non-negative or non-numeric values
+                    ' If not numeric, reset to default style
                     cell.Style.BackColor = Color.Empty
                     cell.Style.ForeColor = Color.Empty
                 End If
-            Next
+            End If
         Next
+
     End Sub
 
     Private Sub btnTrial_Click(sender As Object, e As EventArgs) Handles btnTrial.Click
@@ -124,5 +157,16 @@ Public Class WIP_Form
         'Subtract_SputOut()
 
         'Load_Avail_WIP()
+    End Sub
+
+    Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
+        '=========< Phase 2 >========
+        SPUT_sub_SAM_Phase2()
+        'Load_Avail_WIP()
+        Load_Avail_WIP_Phase2()
+
+        For Each col As DataGridViewColumn In DataGridView1.Columns
+            col.SortMode = DataGridViewColumnSortMode.NotSortable
+        Next
     End Sub
 End Class

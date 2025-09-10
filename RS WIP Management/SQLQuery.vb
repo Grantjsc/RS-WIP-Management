@@ -60,6 +60,304 @@ Module Query_Module
         End If
     End Sub
 
+    '====================< START OF PHASE 2 >==================
+
+
+    '====================< FOR GENERAL USE >==================
+
+    Sub Insert_to_databse(ProcessQTY As String)
+        Dim mycommand As String
+
+        Dim dateNtime As String = Date.Now.ToString("MM/dd/yyyy hh:mm tt")
+        Dim Proc As String = Form1.lblProcessName.Text
+        Dim Prod As String = Form1.txtProduct.Text
+        Dim Lot As String = Form1.txtLot.Text
+        Dim Quantity As Integer = CInt(Form1.txtQty.Text)
+
+        Try
+            ConOpen()
+            mycommand = "INSERT INTO [WIPM_P2_MasterData_tb] ([Entry_dt], [Process], [ProductName], [Lot_number], " & ProcessQTY & ") 
+                                VALUES (@dt, @process, @prodname, @lotnum, @qnty)"
+            Using command As New SqlCommand(mycommand, Dbconnection)
+                command.Parameters.AddWithValue("@dt", dateNtime)
+                command.Parameters.AddWithValue("@process", Proc)
+                command.Parameters.AddWithValue("@prodname", Prod)
+                command.Parameters.AddWithValue("@lotnum", Lot)
+                command.Parameters.AddWithValue("@qnty", Quantity)
+                command.ExecuteNonQuery()
+            End Using
+            ConClose()
+
+        Catch ex As Exception
+            MsgBox(ex.Message, vbCritical)
+        End Try
+
+        Form1.txtQty.ReadOnly = True
+        Form1.btnSubmit.Focus()
+
+        ClearData()
+
+        Select Case Process_Indicator
+            Case 1 ' Vibrator 
+
+                Load_Data("Vibrator_Qty")
+
+            Case 2 ' Anneal
+
+                Load_Data("Anneal_Qty")
+
+            Case 3 ' Sput
+
+                Load_Data("Sput_Qty")
+
+        End Select
+
+    End Sub
+
+    Sub Form1_TableDesign(ProcessQTY As String)
+        With Form1
+
+            ' Rename column headers
+            .DataGridView1.Columns("ID").Visible = False
+            .DataGridView1.Columns("Entry_dt").HeaderText = "Date and time of entry"
+            .DataGridView1.Columns("ProductName").HeaderText = "Product name"
+            .DataGridView1.Columns("Lot_number").HeaderText = "Lot number"
+            .DataGridView1.Columns(ProcessQTY).HeaderText = "Quantity"
+
+            '.DataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells
+
+            '.DataGridView1.Columns("P1_Remarks").DefaultCellStyle.WrapMode = DataGridViewTriState.True
+
+            ' Style alternating row colors
+            .DataGridView1.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(223, 228, 234)
+            .DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+            .DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
+            .DataGridView1.EnableHeadersVisualStyles = False
+            .DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+        End With
+    End Sub
+
+    Sub Load_Data(ProcessQTY As String)
+        Dim command As New SqlCommand("", Dbconnection)
+        Dim table As New DataTable
+
+        ' Open SQL connection
+        ConOpen()
+
+        If Dbconnection.State = ConnectionState.Open Then
+            command.Connection = Dbconnection
+
+
+            Dim ProcessName As String = Form1.lblProcessName.Text
+
+            Select Case LoadingProcess_ID
+                Case 1 ' Vibrator 
+
+
+                    command.CommandText = "SELECT TOP 50 ID, Entry_dt, ProductName, Lot_number, " & ProcessQTY & " 
+                         FROM WIPM_P2_MasterData_tb 
+                         WHERE Process = @ProName AND Entry_dt BETWEEN @StartDate AND @EndDate 
+                         ORDER BY Entry_dt DESC"
+
+                Case 2 ' Anneal
+
+                    command.CommandText = "SELECT TOP 50 ID, Entry_dt, ProductName, Lot_number, " & ProcessQTY & " 
+                         FROM WIPM_P2_MasterData_tb 
+                         WHERE Process = @ProName AND Entry_dt BETWEEN @StartDate AND @EndDate 
+                         ORDER BY Entry_dt DESC"
+
+                Case 3 ' Sput
+
+                    command.CommandText = "SELECT TOP 50 ID, Entry_dt, ProductName, Lot_number, " & ProcessQTY & " 
+                         FROM WIPM_P2_MasterData_tb 
+                         WHERE Process = @ProName AND Entry_dt BETWEEN @StartDate AND @EndDate 
+                         ORDER BY Entry_dt DESC"
+
+                Case 4 ' Load All Data
+
+                    command.CommandText = "SELECT ID, Entry_dt, ProductName, Lot_number, " & ProcessQTY & " 
+                         FROM WIPM_P2_MasterData_tb 
+                         WHERE Process = @ProName AND Entry_dt BETWEEN @StartDate AND @EndDate 
+                         ORDER BY Entry_dt DESC"
+
+            End Select
+
+            Dim startDate As DateTime = Form1.dtpStartDate.Value.Date
+            Dim endDate As DateTime = Form1.dtpEndDate.Value.Date.AddDays(1)
+            command.Parameters.AddWithValue("@StartDate", startDate)
+            command.Parameters.AddWithValue("@EndDate", endDate)
+            command.Parameters.AddWithValue("@ProName", ProcessName)
+
+            Dim rdr As SqlDataReader = command.ExecuteReader()
+            table.Load(rdr)
+
+            ' Bind data to DataGridView
+            Form1.DataGridView1.DataSource = table
+
+            ' Format DataGridView
+            For Each column As DataGridViewColumn In Form1.DataGridView1.Columns
+                column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 11, FontStyle.Bold)
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 9)
+            Next
+
+            Form1_TableDesign(ProcessQTY)
+
+        End If
+
+        ' Close connection
+        ConClose()
+    End Sub
+
+    Sub SearchLot(ProcessQTY As String)
+        Try
+            Dim Data As New DataTable
+            Dim adap As New SqlDataAdapter
+            Dim query As String = ""
+
+            Dim ProcessName As String = Form1.lblProcessName.Text
+
+            If String.IsNullOrEmpty(Form1.txtSearch.Text) Then
+
+                Select Case LoadingProcess_ID
+                    Case 1 ' Vibrator 
+
+
+                        query = "SELECT TOP 50 ID, Entry_dt, ProductName, Lot_number, " & ProcessQTY & " 
+                                  FROM WIPM_P2_MasterData_tb 
+                                  WHERE Process = @ProName AND Entry_dt BETWEEN @StartDate AND @EndDate 
+                                  ORDER BY Entry_dt DESC"
+
+                    Case 2 ' Anneal
+
+                        query = "SELECT TOP 50 ID, Entry_dt, ProductName, Lot_number, " & ProcessQTY & " 
+                                  FROM WIPM_P2_MasterData_tb 
+                                  WHERE Process = @ProName AND Entry_dt BETWEEN @StartDate AND @EndDate 
+                                  ORDER BY Entry_dt DESC"
+
+                    Case 3 ' Sput
+
+                        query = "SELECT TOP 50 ID, Entry_dt, ProductName, Lot_number, " & ProcessQTY & " 
+                                  FROM WIPM_P2_MasterData_tb 
+                                  WHERE Process = @ProName AND Entry_dt BETWEEN @StartDate AND @EndDate 
+                                  ORDER BY Entry_dt DESC"
+
+                    Case 4 ' Load All Data
+
+                        query = "SELECT ID, Entry_dt, ProductName, Lot_number, " & ProcessQTY & " 
+                                  FROM WIPM_P2_MasterData_tb 
+                                  WHERE Process = @ProName AND Entry_dt BETWEEN @StartDate AND @EndDate 
+                                  ORDER BY Entry_dt DESC"
+
+                End Select
+
+            Else
+                Select Case LoadingProcess_ID
+                    Case 1 ' Vibrator 
+
+
+                        query = "SELECT TOP 10 ID, Entry_dt, ProductName, Lot_number, " & ProcessQTY & " 
+                                  FROM WIPM_P2_MasterData_tb 
+                                  WHERE Process = @ProName AND Entry_dt BETWEEN @StartDate AND @EndDate AND Lot_Number LIKE @Search 
+                                  ORDER BY Entry_dt DESC"
+
+                    Case 2 ' Anneal
+
+                        query = "SELECT TOP 10 ID, Entry_dt, ProductName, Lot_number, " & ProcessQTY & " 
+                                  FROM WIPM_P2_MasterData_tb 
+                                  WHERE Process = @ProName AND Entry_dt BETWEEN @StartDate AND @EndDate AND Lot_Number LIKE @Search 
+                                  ORDER BY Entry_dt DESC"
+
+                    Case 3 ' Sput
+
+                        query = "SELECT TOP 10 ID, Entry_dt, ProductName, Lot_number, " & ProcessQTY & " 
+                                  FROM WIPM_P2_MasterData_tb 
+                                  WHERE Process = @ProName AND Entry_dt BETWEEN @StartDate AND @EndDate AND Lot_Number LIKE @Search 
+                                  ORDER BY Entry_dt DESC"
+
+                    Case 4 ' Load All Data
+
+                        query = "SELECT ID, Entry_dt, ProductName, Lot_number, " & ProcessQTY & " 
+                                  FROM WIPM_P2_MasterData_tb 
+                                  WHERE Process = @ProName AND Entry_dt BETWEEN @StartDate AND @EndDate AND Lot_Number LIKE @Search 
+                                  ORDER BY Entry_dt DESC"
+
+                End Select
+            End If
+
+            adap = New SqlDataAdapter(query, Dbconnection)
+
+            Dim startDate As DateTime = Form1.dtpStartDate.Value.Date
+            Dim endDate As DateTime = Form1.dtpEndDate.Value.Date.AddDays(1)
+            adap.SelectCommand.Parameters.AddWithValue("@StartDate", startDate)
+            adap.SelectCommand.Parameters.AddWithValue("@EndDate", endDate)
+            adap.SelectCommand.Parameters.AddWithValue("@ProName", ProcessName)
+
+            If Form1.txtSearch.Text <> "" Then
+                adap.SelectCommand.Parameters.AddWithValue("@Search", "%" & Form1.txtSearch.Text & "%")
+            End If
+
+            ConOpen()
+            adap.Fill(Data)
+            ConClose()
+
+            Form1.DataGridView1.DataSource = Data
+
+            ' Format DataGridView
+            For Each column As DataGridViewColumn In Form1.DataGridView1.Columns
+                column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 11, FontStyle.Bold)
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 9)
+            Next
+
+            Form1_TableDesign(ProcessQTY)
+
+        Catch ex As Exception
+            'MsgBox(ex.Message, vbCritical)
+        Finally
+            ConClose()
+        End Try
+    End Sub
+
+    Sub Get_Product_Suggestion()
+
+        Try
+            Dim MyData As String
+            Dim cmd As New SqlCommand
+            Dim adap As New SqlDataAdapter
+            Dim Data As New DataSet
+
+            ConOpen()
+
+            MyData = "SELECT Products FROM WIPM_Products_tb ORDER BY Products ASC"
+            cmd.Connection = Dbconnection
+            cmd.CommandText = MyData
+            adap.SelectCommand = cmd
+
+            adap.Fill(Data)
+
+            Dim column As New AutoCompleteStringCollection
+
+            For i As Integer = 0 To Data.Tables(0).Rows.Count - 1
+                Dim fullName As String = Data.Tables(0).Rows(i)("Products").ToString()
+                column.Add(fullName)
+
+            Next
+
+            Form1.txtProduct.AutoCompleteSource = AutoCompleteSource.CustomSource
+            Form1.txtProduct.AutoCompleteCustomSource = column
+            Form1.txtProduct.AutoCompleteMode = AutoCompleteMode.Suggest
+
+        Catch ex As Exception
+            MsgBox(ex.Message, vbCritical)
+        Finally
+            ConClose()
+        End Try
+    End Sub
+
     Sub Get_Products()
         Try
             Dim MyData As String
@@ -93,6 +391,737 @@ Module Query_Module
             ConClose()
         End Try
     End Sub
+
+    Sub Check_LotNum()
+        Try
+            Dim MyData As String
+            Dim cmd As New SqlCommand
+            Dim Data As New DataTable
+            Dim adap As New SqlDataAdapter
+            ConOpen()
+
+            MyData = "SELECT * FROM WIPM_P2_MasterData_tb WHERE Lot_Number = '" + Form1.txtLot.Text + "' 
+                      AND ProductName = '" + Form1.txtProduct.Text + "'  AND Process LIKE '" + Form1.lblProcessName.Text + "'"
+            cmd.Connection = Dbconnection
+            cmd.CommandText = MyData
+            adap.SelectCommand = cmd
+
+            adap.Fill(Data)
+
+            If Data.Rows.Count > 0 Then
+
+                MsgBox("The entered lot number is already used!", MessageBoxIcon.Error)
+                ClearData()
+            Else
+                'MsgBox("Lot number does not exist in the database.", MessageBoxIcon.Error)
+
+                Form1.txtLot.ReadOnly = True
+                Form1.txtQty.Focus()
+
+
+            End If
+        Catch ex As Exception
+            MsgBox(ex.Message, vbCritical)
+        Finally
+            ConClose()
+        End Try
+    End Sub
+
+    '====================< FOR UpdateWIP_Form SAM Process Target >==================
+
+    Sub UpdateSAM_Load()
+        Dim command As New SqlCommand("", Dbconnection)
+        Dim table As New DataTable
+
+        ConOpen()
+
+        If Dbconnection.State = ConnectionState.Open Then
+            Try
+                command.Connection = Dbconnection
+                command.CommandText = "SELECT ProductName, FORMAT(MAX(WIP_Target), 'N0') AS WIP_Target " &
+                          "FROM WIPM_P2_MasterData_tb GROUP BY ProductName"
+
+                Using rdr As SqlDataReader = command.ExecuteReader()
+                    table.Load(rdr)
+                End Using
+
+                ' After binding the DataTable to the DataGridView
+                UpdateWIP_Form.DataGridView1.DataSource = table
+
+                ' Format DataGridView columns
+                For Each column As DataGridViewColumn In UpdateWIP_Form.DataGridView1.Columns
+                    column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 11, FontStyle.Bold)
+                    column.HeaderCell.Style.ForeColor = Color.White
+                    column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                    column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                    column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 10)
+                Next
+
+                ' Rename column headers for clarity
+                'UpdateWIP_Form.DataGridView1.Columns("Product").ReadOnly = True
+                UpdateWIP_Form.DataGridView1.Columns("ProductName").HeaderText = "Product Name"
+
+                'UpdateWIP_Form.DataGridView1.Columns("VibratorTarget").ReadOnly = False
+                UpdateWIP_Form.DataGridView1.Columns("WIP_Target").HeaderText = "Target"
+
+                ' Clear row styles to prevent conflicts
+                For Each row As DataGridViewRow In UpdateWIP_Form.DataGridView1.Rows
+                    row.DefaultCellStyle.BackColor = Color.Empty
+                    row.DefaultCellStyle.ForeColor = Color.Empty
+                Next
+
+                ' Apply conditional formatting at the cell level
+                For Each row As DataGridViewRow In UpdateWIP_Form.DataGridView1.Rows
+                    For Each cell As DataGridViewCell In row.Cells
+                        Dim cellValue As Decimal
+                        ' Check if the cell value is numeric and negative
+                        If Decimal.TryParse(cell.Value?.ToString(), cellValue) AndAlso cellValue < 0 Then
+                            cell.Style.BackColor = Color.Red
+                            cell.Style.ForeColor = Color.White
+                        Else
+                            ' Reset to default style for non-negative or non-numeric values
+                            cell.Style.BackColor = Color.Empty
+                            cell.Style.ForeColor = Color.Empty
+                        End If
+                    Next
+                Next
+
+                ' Style the DataGridView
+                UpdateWIP_Form.DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+                UpdateWIP_Form.DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+                UpdateWIP_Form.DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
+                UpdateWIP_Form.DataGridView1.EnableHeadersVisualStyles = False
+                UpdateWIP_Form.DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+            Catch ex As Exception
+                ' Handle any exceptions
+                MessageBox.Show("Error: " & ex.Message, "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Finally
+                ' Always close the connection
+                ConClose()
+            End Try
+        Else
+            MessageBox.Show("Database connection failed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End If
+
+    End Sub
+
+    Sub UpdateSAM_Populate()
+        Try
+            Dim mydata As String
+            Dim command As New SqlCommand
+            Dim data As New DataTable
+            Dim adap As New SqlDataAdapter
+            Dim val As String
+
+            ConOpen()
+
+            val = UpdateWIP_Form.DataGridView1.SelectedCells.Item(0).Value.ToString()
+
+            mydata = "SELECT ProductName
+                      From WIPM_P2_MasterData_tb
+                      WHERE ProductName = '" & val & "' GROUP BY ProductName"
+
+            command.Connection = Dbconnection
+            command.CommandText = mydata
+            adap.SelectCommand = command
+
+            adap.Fill(data)
+
+            If data.Rows.Count > 0 Then
+
+                UpdateWIP_Form.lblProdName.Text = data.Rows(0).Item("ProductName").ToString
+
+            End If
+        Catch ex As Exception
+
+        Finally
+            ConClose()
+        End Try
+    End Sub
+
+    Sub UpdateSAM_Update_Target()
+
+        Try
+
+            Dim Prod As String = UpdateWIP_Form.lblProdName.Text
+            Dim Target As String = CInt(UpdateWIP_Form.txtTarget.Text)
+
+            Dim query As String = "UPDATE WIPM_P2_MasterData_tb 
+                               SET WIP_Target = @Trgt  
+                               WHERE ProductName = @product AND Entry_dt BETWEEN @StartDate AND @EndDate"
+
+            Dim startDate As DateTime = Form1.dtpStartDate.Value.Date
+            Dim endDate As DateTime = Form1.dtpEndDate.Value.Date.AddDays(1)
+
+            Using command As New SqlCommand(query, Dbconnection)
+                command.Parameters.AddWithValue("@StartDate", startDate)
+                command.Parameters.AddWithValue("@EndDate", endDate)
+
+                command.Parameters.AddWithValue("@Trgt", Target)
+                command.Parameters.AddWithValue("@product", Prod)
+
+                ConOpen()
+                command.ExecuteNonQuery()
+
+                ConClose()
+            End Using
+
+            MsgBox("Target WIP for " & UpdateWIP_Form.lblProdName.Text & " is updated!")
+            UpdateWIP_Form.txtTarget.Clear()
+
+        Catch ex As Exception
+            MsgBox(ex.Message, vbCritical)
+        End Try
+    End Sub
+
+    '====================< FOR WIP_Form >==================
+    'Sub SPUT_sub_SAM_Phase2()
+    '    Dim command As New SqlCommand("", Dbconnection)
+    '    Dim table As New DataTable
+
+    '    ConOpen()
+
+    '    If Dbconnection.State = ConnectionState.Open Then
+    '        Try
+    '            ' Step 1: Load the original data with SUM(Sput_Out) and MAX(GAP) grouped by product
+    '            command.Connection = Dbconnection
+    '            command.CommandText = "SELECT ProductName, SUM(Sput_Qty) AS Total_Sput_Out, MAX(WIP_Target) AS Target " &
+    '                           "FROM WIPM_P2_MasterData_tb " &
+    '                           "WHERE Entry_dt BETWEEN @StartDate AND @EndDate " &
+    '                           "GROUP BY ProductName"
+
+    '            Dim startDate As DateTime = Form1.dtpStartDate.Value.Date
+    '            Dim endDate As DateTime = Form1.dtpEndDate.Value.Date.AddDays(1)
+    '            command.Parameters.AddWithValue("@StartDate", startDate)
+    '            command.Parameters.AddWithValue("@EndDate", endDate)
+
+    '            ' Execute the query and load the results into the DataTable
+    '            Using rdr As SqlDataReader = command.ExecuteReader()
+    '                table.Load(rdr)
+    '            End Using
+
+    '            ' Step 2: Update GAP for each row using the original SUM(Sput_Out) and MAX(GAP)
+    '            For Each row As DataRow In table.Rows
+    '                Dim product As String = row("ProductName").ToString()
+    '                Dim totalSamOut As Integer = CInt(row("Total_Sput_Out"))
+    '                Dim maxGap As Integer = CInt(row("Target"))
+
+    '                ' Calculate the new GAP as SUM(Sput_Out) - MAX(GAP)
+    '                Dim newGap As Integer = totalSamOut - maxGap
+
+    '                ' Step 3: Update only the rows for the current product
+    '                ' Note: Reset GAP to the newly calculated value
+    '                Dim updateCmd As New SqlCommand("UPDATE WIPM_P2_MasterData_tb " &
+    '                                           "SET GAP = @NewGap " &
+    '                                           "WHERE ProductName = @prod", Dbconnection)
+    '                updateCmd.Parameters.AddWithValue("@NewGap", newGap)
+    '                updateCmd.Parameters.AddWithValue("@prod", product)
+
+    '                updateCmd.ExecuteNonQuery()
+    '            Next
+
+    '            ' Notify success (optional)
+    '            ' MessageBox.Show("GAP values have been successfully updated.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+    '        Catch ex As Exception
+    '            ' Handle any exceptions
+    '            'MessageBox.Show("Error: " & ex.Message, "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+    '            Console.WriteLine("Error: " & ex.Message)
+    '        Finally
+    '            ' Always close the connection
+    '            ConClose()
+    '        End Try
+    '    Else
+    '        MessageBox.Show("Database connection failed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+    '    End If
+    'End Sub
+
+    'Sub SPUT_sub_SAM_Phase2()
+    '    Dim command As New SqlCommand("", Dbconnection)
+    '    Dim table As New DataTable
+
+    '    ConOpen()
+
+    '    If Dbconnection.State = ConnectionState.Open Then
+    '        Try
+    '            ' Step 1: Load the original data with SUM(Sput_Out) and MAX(GAP) grouped by product
+    '            command.Connection = Dbconnection
+    '            command.CommandText = "SELECT ProductName, SUM(Sput_Qty) AS Total_Sput_Out, MAX(WIP_Target) AS Target " &
+    '                           "FROM WIPM_P2_MasterData_tb " &
+    '                           "WHERE Entry_dt BETWEEN @StartDate AND @EndDate " &
+    '                           "GROUP BY ProductName"
+
+    '            Dim startDate As DateTime = Form1.dtpStartDate.Value.Date
+    '            Dim endDate As DateTime = Form1.dtpEndDate.Value.Date.AddDays(1)
+    '            command.Parameters.AddWithValue("@StartDate", startDate)
+    '            command.Parameters.AddWithValue("@EndDate", endDate)
+
+    '            ' Execute the query and load the results into the DataTable
+    '            Using rdr As SqlDataReader = command.ExecuteReader()
+    '                table.Load(rdr)
+    '            End Using
+
+    '            ' Step 2: Update GAP for each row using the original SUM(Sput_Out) and MAX(GAP)
+    '            For Each row As DataRow In table.Rows
+    '                Dim product As String = row("ProductName").ToString()
+    '                Dim totalSamOut As Integer = CInt(row("Total_Sput_Out"))
+    '                Dim maxGap As Integer = CInt(row("Target"))
+
+    '                ' Calculate the new GAP as SUM(Sput_Out) - MAX(GAP)
+    '                Dim newGap As Integer = totalSamOut - maxGap
+
+    '                ' Step 3: Update only the rows for the current product
+    '                ' Note: Reset GAP to the newly calculated value
+    '                Dim updateCmd As New SqlCommand("UPDATE WIPM_P2_MasterData_tb " &
+    '                                           "SET GAP = @NewGap " &
+    '                                           "WHERE ProductName = @prod", Dbconnection)
+    '                updateCmd.Parameters.AddWithValue("@NewGap", newGap)
+    '                updateCmd.Parameters.AddWithValue("@prod", product)
+
+    '                updateCmd.ExecuteNonQuery()
+    '            Next
+
+    '            ' Notify success (optional)
+    '            ' MessageBox.Show("GAP values have been successfully updated.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+    '        Catch ex As Exception
+    '            ' Handle any exceptions
+    '            'MessageBox.Show("Error: " & ex.Message, "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+    '            Console.WriteLine("Error: " & ex.Message)
+    '        Finally
+    '            ' Always close the connection
+    '            ConClose()
+    '        End Try
+    '    Else
+    '        MessageBox.Show("Database connection failed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+    '    End If
+    'End Sub
+
+    Sub SPUT_sub_SAM_Phase2()
+        Dim command As New SqlCommand("", Dbconnection)
+        Dim table As New DataTable
+
+        ConOpen()
+
+        If Dbconnection.State = ConnectionState.Open Then
+            Try
+                ' Step 1: Load the original data with SUM(Sput_Out) and MAX(WIP_Target) grouped by product
+                command.Connection = Dbconnection
+                command.CommandText = "SELECT ProductName, " &
+                                  "ISNULL(SUM(Sput_Qty), 0) AS Total_Sput_Out, " &
+                                  "ISNULL(MAX(WIP_Target), 0) AS Target " &
+                                  "FROM WIPM_P2_MasterData_tb " &
+                                  "WHERE Entry_dt BETWEEN @StartDate AND @EndDate " &
+                                  "GROUP BY ProductName"
+
+                Dim startDate As DateTime = Form1.dtpStartDate.Value.Date
+                Dim endDate As DateTime = Form1.dtpEndDate.Value.Date.AddDays(1)
+                command.Parameters.AddWithValue("@StartDate", startDate)
+                command.Parameters.AddWithValue("@EndDate", endDate)
+
+                ' Execute the query and load the results into the DataTable
+                Using rdr As SqlDataReader = command.ExecuteReader()
+                    table.Load(rdr)
+                End Using
+
+                ' Step 2: Update GAP for each row
+                For Each row As DataRow In table.Rows
+                    Dim product As String = row("ProductName").ToString()
+                    Dim totalSamOut As Integer = Convert.ToInt32(row("Total_Sput_Out"))
+                    Dim maxGap As Integer = Convert.ToInt32(row("Target"))
+
+                    ' Calculate GAP
+                    Dim newGap As Integer = totalSamOut - maxGap
+
+                    Dim UpstartDate As DateTime = Form1.dtpStartDate.Value.Date
+                    Dim UpendDate As DateTime = Form1.dtpEndDate.Value.Date.AddDays(1)
+
+                    ' Step 3: Update GAP for the current product
+                    Using updateCmd As New SqlCommand("UPDATE WIPM_P2_MasterData_tb " &
+                                                 "SET GAP = @NewGap " &
+                                                 "WHERE ProductName = @prod AND Entry_dt BETWEEN @UpdateStartDate AND @UpdateEndDate ", Dbconnection)
+                        updateCmd.Parameters.AddWithValue("@UpdateStartDate", UpstartDate)
+                        updateCmd.Parameters.AddWithValue("@UpdateEndDate", UpendDate)
+                        updateCmd.Parameters.AddWithValue("@NewGap", newGap)
+                        updateCmd.Parameters.AddWithValue("@prod", product)
+                        updateCmd.ExecuteNonQuery()
+                    End Using
+                Next
+
+            Catch ex As Exception
+                Console.WriteLine("Error: " & ex.Message)
+            Finally
+                ConClose()
+            End Try
+        Else
+            MessageBox.Show("Database connection failed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End If
+    End Sub
+
+    Sub Load_Avail_WIP_Phase2()
+        Dim command As New SqlCommand("", Dbconnection)
+        Dim table As New DataTable
+
+        ConOpen()
+
+        If Dbconnection.State = ConnectionState.Open Then
+            Try
+
+
+
+                command.Connection = Dbconnection
+
+                'command.CommandText = "SELECT 
+                '                            ProductName, 
+                '                            SUM(Vibrator_Qty) AS VIB_OUT, 
+                '                            SUM(Anneal_Qty) AS ANN_OUT, 
+                '                            SUM(Sput_Qty) AS SPUT_OUT, 
+                '                            MAX(WIP_Target) AS WIP_Target, 
+                '                            MAX(GAP) AS GAP
+                '                        FROM WIPM_P2_MasterData_tb 
+                '                        WHERE Entry_dt BETWEEN @StartDate AND @EndDate 
+                '                        GROUP BY ProductName"
+
+                command.CommandText = "SELECT 
+                                        ProductName, 
+
+                                        -- Vibrator Qty for chosen slot
+                                        SUM(CASE 
+                                                WHEN Entry_dt BETWEEN @StartDate AND @EndDate
+                                                     AND CAST(Entry_dt AS TIME) BETWEEN @TimeStart AND @TimeEnd
+                                                THEN Vibrator_Qty 
+                                            END) AS VIB_OUT,
+
+                                        -- Anneal Qty for chosen slot
+                                        SUM(CASE 
+                                                WHEN Entry_dt BETWEEN @StartDate AND @EndDate
+                                                     AND CAST(Entry_dt AS TIME) BETWEEN @TimeStart AND @TimeEnd
+                                                THEN Anneal_Qty 
+                                            END) AS ANN_OUT,
+
+                                        -- Sput Qty for whole day
+                                        SUM(CASE 
+                                                WHEN Entry_dt BETWEEN @StartDate AND @EndDate 
+                                                THEN Sput_Qty 
+                                            END) AS SPUT_OUT,
+
+                                        MAX(WIP_Target) AS WIP_Target, 
+                                        MAX(GAP) AS GAP 
+
+                                    FROM WIPM_P2_MasterData_tb WHERE Entry_dt BETWEEN @StartDate AND @EndDate 
+                                    GROUP BY ProductName;"
+
+                Dim startDate As DateTime = Form1.dtpStartDate.Value.Date
+                Dim endDate As DateTime = Form1.dtpEndDate.Value.Date.AddDays(1)
+
+                Dim timeStart As TimeSpan
+                Dim timeEnd As TimeSpan
+
+                Dim currentTime As DateTime = DateTime.Now
+
+                If (currentTime.TimeOfDay >= New TimeSpan(0, 0, 0) AndAlso currentTime.TimeOfDay < New TimeSpan(2, 0, 0)) Then
+                    timeStart = TimeSpan.Parse("00:00:00")
+                    timeEnd = TimeSpan.Parse("02:00:00")
+
+                    WIP_Form.lblVibAnn.Text = "The total value of Vibrator and Anneal is calculated between 12:00 AM - 2:00 AM."
+
+                ElseIf (currentTime.TimeOfDay >= New TimeSpan(2, 0, 0) AndAlso currentTime.TimeOfDay < New TimeSpan(4, 0, 0)) Then
+                    timeStart = TimeSpan.Parse("02:00:00")
+                    timeEnd = TimeSpan.Parse("04:00:00")
+
+                    WIP_Form.lblVibAnn.Text = "The total value of Vibrator and Anneal is calculated between 2:00 AM - 4:00 AM."
+
+
+                ElseIf (currentTime.TimeOfDay >= New TimeSpan(4, 0, 0) AndAlso currentTime.TimeOfDay < New TimeSpan(6, 0, 0)) Then
+                    timeStart = TimeSpan.Parse("04:00:00")
+                    timeEnd = TimeSpan.Parse("06:00:00")
+
+                    WIP_Form.lblVibAnn.Text = "The total value of Vibrator and Anneal is calculated between 4:00 AM - 6:00 AM."
+
+
+                ElseIf (currentTime.TimeOfDay >= New TimeSpan(6, 0, 0) AndAlso currentTime.TimeOfDay < New TimeSpan(8, 0, 0)) Then
+                    timeStart = TimeSpan.Parse("06:00:00")
+                    timeEnd = TimeSpan.Parse("08:00:00")
+
+                    WIP_Form.lblVibAnn.Text = "The total value of Vibrator and Anneal is calculated between 6:00 AM - 8:00 AM."
+
+
+                ElseIf (currentTime.TimeOfDay >= New TimeSpan(8, 0, 0) AndAlso currentTime.TimeOfDay < New TimeSpan(10, 0, 0)) Then
+                    timeStart = TimeSpan.Parse("08:00:00")
+                    timeEnd = TimeSpan.Parse("10:00:00")
+
+                    WIP_Form.lblVibAnn.Text = "The total value of Vibrator and Anneal is calculated between 8:00 AM - 10:00 AM."
+
+
+                ElseIf (currentTime.TimeOfDay >= New TimeSpan(10, 0, 0) AndAlso currentTime.TimeOfDay < New TimeSpan(12, 0, 0)) Then
+                    timeStart = TimeSpan.Parse("10:00:00")
+                    timeEnd = TimeSpan.Parse("12:00:00")
+
+                    WIP_Form.lblVibAnn.Text = "The total value of Vibrator and Anneal is calculated between 10:00 AM - 12:00 PM."
+
+                ElseIf (currentTime.TimeOfDay >= New TimeSpan(12, 0, 0) AndAlso currentTime.TimeOfDay < New TimeSpan(14, 0, 0)) Then
+                    timeStart = TimeSpan.Parse("12:00:00")
+                    timeEnd = TimeSpan.Parse("14:00:00")
+
+                    WIP_Form.lblVibAnn.Text = "The total value of Vibrator and Anneal is calculated between 12:00 PM - 2:00 PM."
+
+                ElseIf (currentTime.TimeOfDay >= New TimeSpan(14, 0, 0) AndAlso currentTime.TimeOfDay < New TimeSpan(16, 0, 0)) Then
+                    timeStart = TimeSpan.Parse("14:00:00")
+                    timeEnd = TimeSpan.Parse("16:00:00")
+
+                    WIP_Form.lblVibAnn.Text = "The total value of Vibrator and Anneal is calculated between 2:00 PM - 4:00 PM."
+
+                ElseIf (currentTime.TimeOfDay >= New TimeSpan(16, 0, 0) AndAlso currentTime.TimeOfDay < New TimeSpan(18, 0, 0)) Then
+                    timeStart = TimeSpan.Parse("16:00:00")
+                    timeEnd = TimeSpan.Parse("18:00:00")
+
+                    WIP_Form.lblVibAnn.Text = "The total value of Vibrator and Anneal is calculated between 4:00 PM - 6:00 PM."
+
+                ElseIf (currentTime.TimeOfDay >= New TimeSpan(18, 0, 0) AndAlso currentTime.TimeOfDay < New TimeSpan(20, 0, 0)) Then
+                    timeStart = TimeSpan.Parse("18:00:00")
+                    timeEnd = TimeSpan.Parse("20:00:00")
+
+                    WIP_Form.lblVibAnn.Text = "The total value of Vibrator and Anneal is calculated between 6:00 PM - 8:00 PM."
+
+                ElseIf (currentTime.TimeOfDay >= New TimeSpan(20, 0, 0) AndAlso currentTime.TimeOfDay < New TimeSpan(22, 0, 0)) Then
+                    timeStart = TimeSpan.Parse("20:00:00")
+                    timeEnd = TimeSpan.Parse("22:00:00")
+
+                    WIP_Form.lblVibAnn.Text = "The total value of Vibrator and Anneal is calculated between 8:00 PM - 10:00 PM."
+
+                ElseIf (currentTime.TimeOfDay >= New TimeSpan(22, 0, 0) AndAlso currentTime.TimeOfDay <= New TimeSpan(23, 59, 59)) Then
+                    timeStart = TimeSpan.Parse("22:00:00")
+                    timeEnd = TimeSpan.Parse("23:59:59")
+
+                    WIP_Form.lblVibAnn.Text = "The total value of Vibrator and Anneal is calculated between 10:00 PM - 12:00 AM."
+
+                End If
+
+                command.Parameters.AddWithValue("@StartDate", startDate)
+                command.Parameters.AddWithValue("@EndDate", endDate)
+                command.Parameters.AddWithValue("@TimeStart", timeStart)
+                command.Parameters.AddWithValue("@TimeEnd", timeEnd)
+
+                Using rdr As SqlDataReader = command.ExecuteReader()
+                    table.Load(rdr)
+                End Using
+
+                With WIP_Form.DataGridView1
+                    .DataSource = table
+
+                    ' Add handler to format rows after binding
+                    RemoveHandler .DataBindingComplete, AddressOf FormatWIPRows ' Avoid multiple bindings
+                    AddHandler .DataBindingComplete, AddressOf FormatWIPRows
+
+                    ' Header and cell formatting
+                    For Each column As DataGridViewColumn In .Columns
+                        column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 11, FontStyle.Bold)
+                        column.HeaderCell.Style.ForeColor = Color.White
+                        column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                        column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                        column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 10)
+                        column.DefaultCellStyle.Format = "N0"
+                    Next
+
+                    ' Rename column headers (display names)
+                    .Columns("ProductName").HeaderText = "Product Name"
+                    .Columns("VIB_OUT").HeaderText = "Vibrator (2hrs)"
+                    .Columns("ANN_OUT").HeaderText = "Annealing (2hrs)"
+                    .Columns("SPUT_OUT").HeaderText = "Done in Sput (Whole day)"
+                    .Columns("WIP_Target").HeaderText = "Sputtered WIP Target for SAM"
+
+                    '.Columns("ProductName").HeaderCell.Style.BackColor = Color.FromArgb(0, 184, 148)
+                    '.Columns("VIB_OUT").HeaderCell.Style.BackColor = Color.FromArgb(0, 184, 148)
+                    '.Columns("ANN_OUT").HeaderCell.Style.BackColor = Color.FromArgb(0, 184, 148)
+                    '.Columns("SPUT_OUT").HeaderCell.Style.BackColor = Color.FromArgb(253, 203, 110)
+                    '.Columns("WIP_Target").HeaderCell.Style.BackColor = Color.FromArgb(253, 121, 168)
+
+                    .Columns("ProductName").HeaderCell.Style.BackColor = Color.FromArgb(0, 98, 102) '0, 148, 50
+                    .Columns("VIB_OUT").HeaderCell.Style.BackColor = Color.FromArgb(0, 98, 102)
+                    .Columns("ANN_OUT").HeaderCell.Style.BackColor = Color.FromArgb(0, 98, 102)
+                    .Columns("SPUT_OUT").HeaderCell.Style.BackColor = Color.FromArgb(247, 159, 31)
+                    .Columns("WIP_Target").HeaderCell.Style.BackColor = Color.FromArgb(217, 128, 250)
+
+
+                    ' Theme styles
+                    .DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+                    .DefaultCellStyle.SelectionForeColor = Color.White
+                    .EnableHeadersVisualStyles = False
+                    .ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+                    .ClearSelection()
+                    .Refresh()
+                End With
+
+            Catch ex As Exception
+                MessageBox.Show("Error: " & ex.Message, "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Finally
+                ConClose()
+            End Try
+        Else
+            MessageBox.Show("Database connection failed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End If
+    End Sub
+
+
+    '====================< AddDelete_Form Code >==================
+
+    Sub AddDelete_TableDesign()
+        With AddDelete_Form
+
+            ' Prevent adding duplicate Edit column
+            If .DataGridView1.Columns("DeleteButton") Is Nothing Then
+                Dim deleteColumn As New DataGridViewButtonColumn()
+                deleteColumn.Name = "DeleteButton"
+                deleteColumn.HeaderText = "Delete"
+                deleteColumn.Text = "Delete"
+                deleteColumn.UseColumnTextForButtonValue = True
+                .DataGridView1.Columns.Add(deleteColumn)
+            End If
+
+            ' Rename column headers
+            .DataGridView1.Columns("ID").Visible = False
+            .DataGridView1.Columns("Products").HeaderText = "List of Product name"
+
+            .DataGridView1.Columns("DeleteButton").AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+
+            '.DataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnMode.AllCells
+
+            '.DataGridView1.Columns("P1_Remarks").DefaultCellStyle.WrapMode = DataGridViewTriState.True
+
+            ' Style alternating row colors
+            .DataGridView1.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(223, 228, 234)
+            .DataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(9, 132, 227)
+            .DataGridView1.DefaultCellStyle.SelectionForeColor = Color.White
+            .DataGridView1.EnableHeadersVisualStyles = False
+            .DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 104, 169)
+
+
+            ' Format DataGridView
+            For Each column As DataGridViewColumn In AddDelete_Form.DataGridView1.Columns
+                column.HeaderCell.Style.Font = New Font("MS Reference Sans Serif", 11, FontStyle.Bold)
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                column.DefaultCellStyle.Font = New Font("MS Reference Sans Serif", 9)
+            Next
+
+        End With
+    End Sub
+
+    Sub Load_ProductName()
+        Dim command As New SqlCommand("", Dbconnection)
+        Dim table As New DataTable
+
+        ' Open SQL connection
+        ConOpen()
+
+        If Dbconnection.State = ConnectionState.Open Then
+            command.Connection = Dbconnection
+
+
+            command.CommandText = "SELECT ID, Products 
+                         FROM WIPM_Products_tb 
+                         ORDER BY ID DESC"
+
+            Dim rdr As SqlDataReader = command.ExecuteReader()
+            table.Load(rdr)
+
+            ' Bind data to DataGridView
+            AddDelete_Form.DataGridView1.DataSource = table
+
+            AddDelete_TableDesign()
+
+        End If
+
+        ' Close connection
+        ConClose()
+    End Sub
+
+    Sub Check_ProductName()
+        Try
+            Dim MyData As String
+            Dim cmd As New SqlCommand
+            Dim Data As New DataTable
+            Dim adap As New SqlDataAdapter
+            ConOpen()
+
+            MyData = "SELECT * FROM WIPM_Products_tb WHERE Products = '" + AddDelete_Form.txtProduct.Text + "'"
+            cmd.Connection = Dbconnection
+            cmd.CommandText = MyData
+            adap.SelectCommand = cmd
+
+            adap.Fill(Data)
+
+            If Data.Rows.Count > 0 Then
+
+                MsgBox("The product name you entered is already on the list!", MessageBoxIcon.Error)
+                AddDelete_Form.txtProduct.Clear()
+            Else
+                'MsgBox("Lot number does not exist in the database.", MessageBoxIcon.Error)
+                Insert_ProductName()
+
+            End If
+        Catch ex As Exception
+            MsgBox(ex.Message, vbCritical)
+        Finally
+            ConClose()
+        End Try
+    End Sub
+
+    Sub Insert_ProductName()
+        Dim mycommand As String
+
+        Dim Prod As String = AddDelete_Form.txtProduct.Text
+
+        Try
+            ConOpen()
+            mycommand = "INSERT INTO [WIPM_Products_tb] ([Products]) 
+                                VALUES (@prodname)"
+            Using command As New SqlCommand(mycommand, Dbconnection)
+
+                command.Parameters.AddWithValue("@prodname", Prod)
+
+                command.ExecuteNonQuery()
+            End Using
+            ConClose()
+
+        Catch ex As Exception
+            MsgBox(ex.Message, vbCritical)
+        End Try
+
+        AddDelete_Form.txtProduct.Clear()
+        Load_ProductName()
+
+    End Sub
+
+    Public Delete_ID As Integer
+
+    Sub Delete_ProductName()
+        Try
+            Dim query As String = "DELETE FROM WIPM_Products_tb WHERE ID = @id"
+
+            Using command As New SqlCommand(query, Dbconnection)
+                command.Parameters.Add("@id", SqlDbType.Int).Value = Delete_ID
+
+                ConOpen()
+                command.ExecuteNonQuery()
+            End Using
+
+            MsgBox("The product name has been deleted successfully.", MsgBoxStyle.Information)
+
+            Load_ProductName()
+
+        Catch ex As Exception
+            MsgBox("Error: " & ex.Message, vbCritical)
+
+        Finally
+            ConClose()
+        End Try
+    End Sub
+
+
+    '====================< END OF PHASE 2 >==================
 
     '**************************** < FOR PUNCH PRESS > ****************************
     Sub Add_PunchPress_In_to_Processtb()
@@ -290,31 +1319,24 @@ Module Query_Module
             Dim adap As New SqlDataAdapter
             ConOpen()
 
-            MyData = "SELECT * FROM WIPM_Vibrator_tb WHERE Lot_Number = '" + Form1.txtLot.Text + "'"
+            MyData = "SELECT * FROM WIPM_P2_MasterData_tb WHERE Lot_Number = '" + Form1.txtLot.Text + "' 
+                      AND ProductName = '" + Form1.txtProduct.Text + "'  AND Process LIKE '" + Form1.lblProcessName.Text + "'"
             cmd.Connection = Dbconnection
             cmd.CommandText = MyData
             adap.SelectCommand = cmd
 
             adap.Fill(Data)
 
-            'Clear_Datas()
-
             If Data.Rows.Count > 0 Then
 
-                Form1.txtLot.ReadOnly = True
-                Form1.txtTransac.Text = "OUT"
-                Form1.txtQty.Focus()
-
-                IN_Product = False
+                MsgBox("The entered lot number is already used!", MessageBoxIcon.Error)
 
             Else
                 'MsgBox("Lot number does not exist in the database.", MessageBoxIcon.Error)
 
                 Form1.txtLot.ReadOnly = True
-                Form1.txtTransac.Text = "IN"
                 Form1.txtQty.Focus()
 
-                IN_Product = True
 
             End If
         Catch ex As Exception
@@ -1906,28 +2928,29 @@ Module Query_Module
             If row.IsNewRow Then Continue For
 
             Dim vibOut = ToDecimalSafe(row.Cells("VIB_OUT").Value)
-            Dim vibTarget = ToDecimalSafe(row.Cells("VibratorTarget").Value)
-            Dim lwOut = ToDecimalSafe(row.Cells("LW_OUT").Value)
             Dim annOut = ToDecimalSafe(row.Cells("ANN_OUT").Value)
             Dim sputOut = ToDecimalSafe(row.Cells("SPUT_OUT").Value)
-            Dim targetWIP = ToDecimalSafe(row.Cells("Target_WIP").Value)
+            Dim targetWIP = ToDecimalSafe(row.Cells("WIP_Target").Value)
 
-            If vibOut < vibTarget Then
-                row.Cells("VIB_OUT").Style.BackColor = Color.Red
-                row.Cells("VIB_OUT").Style.ForeColor = Color.White
-            End If
-            If lwOut < targetWIP Then
-                row.Cells("LW_OUT").Style.BackColor = Color.Red
-                row.Cells("LW_OUT").Style.ForeColor = Color.White
-            End If
-            If annOut < targetWIP Then
-                row.Cells("ANN_OUT").Style.BackColor = Color.Red
-                row.Cells("ANN_OUT").Style.ForeColor = Color.White
-            End If
-            If sputOut < targetWIP Then
-                row.Cells("SPUT_OUT").Style.BackColor = Color.Red
-                row.Cells("SPUT_OUT").Style.ForeColor = Color.White
-            End If
+            'If vibOut < vibTarget Then
+            '    row.Cells("VIB_OUT").Style.BackColor = Color.Red
+            '    row.Cells("VIB_OUT").Style.ForeColor = Color.White
+            'End If
+            'If lwOut < targetWIP Then
+            '    row.Cells("LW_OUT").Style.BackColor = Color.Red
+            '    row.Cells("LW_OUT").Style.ForeColor = Color.White
+            'End If
+            'If annOut < targetWIP Then
+            '    row.Cells("ANN_OUT").Style.BackColor = Color.Red
+            '    row.Cells("ANN_OUT").Style.ForeColor = Color.White
+            'End If
+
+            'If sputOut < targetWIP Then
+            '    row.Cells("SPUT_OUT").Style.BackColor = Color.Red
+            '    row.Cells("SPUT_OUT").Style.ForeColor = Color.White
+            'End If
+
+
         Next
     End Sub
 
